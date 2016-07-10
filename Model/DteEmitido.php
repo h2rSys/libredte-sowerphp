@@ -262,6 +262,21 @@ class Model_DteEmitido extends Model_Base_Envio
     private $datos; ///< Arreglo con los datos del XML del DTE
 
     /**
+     * Constructor clase DTE emitido
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-07-09
+     */
+    public function __construct($emisor = null, $dte = null, $folio = null, $certificacion = null)
+    {
+        if ($emisor!==null and $dte!==null and $folio!==null and $certificacion!==null) {
+            parent::__construct($emisor, $dte, $folio, $certificacion);
+            if ($this->revision_estado==-11) {
+                $this->revision_detalle = 'Esperando respuesta de SII';
+            }
+        }
+    }
+
+    /**
      * Método que entrega el objeto del tipo del dte
      * @return \website\Dte\Admin\Mantenedores\Model_DteTipo
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)

@@ -56,10 +56,15 @@ class Shell_Command_DteEmitidos_Actualizar extends \Shell_App
             }
             $DteEmitido = new Model_DteEmitido($Contribuyente->rut, $d['dte'], $d['folio'], (int)$Contribuyente->config_ambiente_en_certificacion);
             try {
+                $estado_original = $DteEmitido->revision_estado;
                 $DteEmitido->actualizarEstado();
                 if ($DteEmitido->getEstado()=='R') {
                     $msg = $DteEmitido->revision_estado."\n\n".$DteEmitido->revision_detalle;
-                    print_r($Contribuyente->notificar('T'.$DteEmitido->dte.'F'.$DteEmitido->folio.' RECHAZADO!', $msg));
+                    $Contribuyente->notificar('T'.$DteEmitido->dte.'F'.$DteEmitido->folio.' RECHAZADO!', $msg);
+                }
+                if ($estado_original=='-11' and $DteEmitido->revision_estado!=$estado_original) {
+                    $msg = $DteEmitido->revision_estado."\n\n".$DteEmitido->revision_detalle;
+                    $Contribuyente->notificar('T'.$DteEmitido->dte.'F'.$DteEmitido->folio.' ESTADO -11 ACTUALIZADO!', $msg);
                 }
                 if ($this->verbose) {
                     $this->out($DteEmitido->revision_estado);
@@ -107,7 +112,7 @@ class Shell_Command_DteEmitidos_Actualizar extends \Shell_App
                     g.grupo = :grupo
                     AND e.dte NOT IN (39, 41)
                     AND e.certificacion = :certificacion
-                    AND (e.track_id IS NULL OR e.revision_estado IS NULL)
+                    AND (e.track_id IS NULL OR e.revision_estado IS NULL OR e.revision_estado = \'-11\')
             ', [':certificacion'=>(int)$certificacion, ':grupo' => $grupo]);
         } else {
             return $this->db->getCol('
@@ -119,7 +124,7 @@ class Shell_Command_DteEmitidos_Actualizar extends \Shell_App
                     c.usuario IS NOT NULL
                     AND e.dte NOT IN (39, 41)
                     AND e.certificacion = :certificacion
-                    AND (e.track_id IS NULL OR e.revision_estado IS NULL)
+                    AND (e.track_id IS NULL OR e.revision_estado IS NULL OR e.revision_estado = \'-11\')
             ', [':certificacion'=>(int)$certificacion]);
         }
     }

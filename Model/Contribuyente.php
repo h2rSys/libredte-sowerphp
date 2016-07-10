@@ -1736,7 +1736,7 @@ class Model_Contribuyente extends \Model_App
      * Método que entrega el listado de documentos electrónicos que han sido
      * generados y enviados al SII pero aun no se ha actualizado su estado
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-11
+     * @version 2016-07-09
      */
     public function getDteEmitidosSinEstado()
     {
@@ -1748,7 +1748,7 @@ class Model_Contribuyente extends \Model_App
                 AND certificacion = :certificacion
                 AND dte NOT IN (39, 41)
                 AND track_id IS NOT NULL
-                AND revision_estado IS NULL
+                AND (revision_estado IS NULL OR revision_estado = \'-11\')
         ', [':rut'=>$this->rut, ':certificacion'=>(int)$this->config_ambiente_en_certificacion]);
     }
 
