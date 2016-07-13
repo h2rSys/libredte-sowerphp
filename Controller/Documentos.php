@@ -264,7 +264,7 @@ class Controller_Documentos extends \Controller_App
     /**
      * Acción para mostrar página de emisión de DTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-30
+     * @version 2016-07-13
      */
     public function emitir($referencia_dte = null, $referencia_folio = null, $dte_defecto = null, $referencia_codigo = '', $referencia_razon = '')
     {
@@ -298,6 +298,8 @@ class Controller_Documentos extends \Controller_App
             '_header_extra' => ['js'=>['/dte/js/dte.js', '/js/typeahead.bundle.min.js', '/js/js.js'], 'css'=>['/dte/css/dte.css', '/css/typeahead.css']],
             'Emisor' => $Emisor,
             'actividades_economicas' => $Emisor->getListActividades(),
+            'sucursales' => $Emisor->getSucursales(),
+            'sucursal' => '', // TODO: sucursal por defecto
             'comunas' => (new \sowerphp\app\Sistema\General\DivisionGeopolitica\Model_Comunas())->getList(),
             'tasa' => \sasco\LibreDTE\Sii::getIVA(),
             'tipos_dte_autorizados' => $Emisor->getDocumentosAutorizados(),
@@ -316,7 +318,7 @@ class Controller_Documentos extends \Controller_App
     /**
      * Acción para generar y mostrar previsualización de emisión de DTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-24
+     * @version 2016-07-13
      */
     public function previsualizacion()
     {
@@ -335,6 +337,10 @@ class Controller_Documentos extends \Controller_App
             );
             $this->redirect('/dte/documentos/emitir');
         }
+        // obtener dirección y comuna emisor
+        $sucursal = $Emisor->getSucursal($_POST['CdgSIISucur']);
+        $_POST['DirOrigen'] = $sucursal->direccion;
+        $_POST['CmnaOrigen'] = (new \sowerphp\app\Sistema\General\DivisionGeopolitica\Model_Comunas())->get($sucursal->comuna)->comuna;
         // revisar datos mínimos
         $datos_minimos = ['TpoDoc', 'FchEmis', 'GiroEmis', 'Acteco', 'DirOrigen', 'CmnaOrigen', 'RUTRecep', 'RznSocRecep', 'GiroRecep', 'DirRecep', 'CmnaRecep', 'NmbItem'];
         foreach ($datos_minimos as $attr) {
@@ -345,11 +351,6 @@ class Controller_Documentos extends \Controller_App
                 $this->redirect('/dte/documentos/emitir');
             }
         }
-        // copiar datos del emisor
-        $Emisor->giro = $_POST['GiroEmis'];
-        $Emisor->actividad_economica = $_POST['Acteco'];
-        $Emisor->direccion = $_POST['DirOrigen'];
-        $Emisor->comuna = $_POST['CmnaOrigen'];
         // crear receptor
         list($rut, $dv) = explode('-', str_replace('.', '', $_POST['RUTRecep']));
         $Receptor = new Model_Contribuyente($rut);
@@ -387,12 +388,14 @@ class Controller_Documentos extends \Controller_App
                 'Emisor' => [
                     'RUTEmisor' => $Emisor->rut.'-'.$Emisor->dv,
                     'RznSoc' => $Emisor->razon_social,
-                    'GiroEmis' => $Emisor->giro,
+                    'GiroEmis' => $_POST['GiroEmis'],
                     'Telefono' => $Emisor->telefono ? $Emisor->telefono : false,
                     'CorreoEmisor' => $Emisor->email ? $Emisor->email : false,
-                    'Acteco' => $Emisor->actividad_economica,
-                    'DirOrigen' => $Emisor->direccion,
-                    'CmnaOrigen' => $Emisor->getComuna()->comuna,
+                    'Acteco' => $_POST['Acteco'],
+                    'CdgSIISucur' => $_POST['CdgSIISucur'] ? $_POST['CdgSIISucur'] : false,
+                    'DirOrigen' => $_POST['DirOrigen'],
+                    'CmnaOrigen' => $_POST['CmnaOrigen'],
+                    'CdgVendedor' => $_POST['CdgVendedor'] ? $_POST['CdgVendedor'] : false,
                 ],
                 'Receptor' => [
                     'RUTRecep' => $Receptor->rut.'-'.$Receptor->dv,
@@ -589,6 +592,7 @@ class Controller_Documentos extends \Controller_App
             );
             $Dte = new \sasco\LibreDTE\Sii\Dte($dte);
             $this->set([
+                'Emisor' => $Emisor,
                 'resumen' => $Dte->getResumen(),
                 'DteTmp' => $DteTmp,
             ]);
@@ -599,7 +603,7 @@ class Controller_Documentos extends \Controller_App
      * Función de la API que permite emitir un DTE a partir de un documento
      * temporal, asignando folio, firmando y enviando al SII
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-07-03
+     * @version 2016-07-13
      */
     public function _api_generar_POST()
     {
@@ -666,7 +670,7 @@ class Controller_Documentos extends \Controller_App
         if ($DteEmitido->exists()) {
             $this->Api->send('Ya existe un DTE del tipo '.$r['TpoDoc'].' y folio '.$r['NroDoc'].' emitido', 409);
         }
-        $cols = ['tasa'=>'TasaImp', 'fecha'=>'FchDoc', 'receptor'=>'RUTDoc', 'exento'=>'MntExe', 'neto'=>'MntNeto', 'iva'=>'MntIVA', 'total'=>'MntTotal'];
+        $cols = ['tasa'=>'TasaImp', 'fecha'=>'FchDoc', 'sucursal_sii'=>'CdgSIISucur', 'receptor'=>'RUTDoc', 'exento'=>'MntExe', 'neto'=>'MntNeto', 'iva'=>'MntIVA', 'total'=>'MntTotal'];
         foreach ($cols as $attr => $col) {
             if ($r[$col]!==false)
                 $DteEmitido->$attr = $r[$col];

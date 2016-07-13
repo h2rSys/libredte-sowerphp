@@ -5,9 +5,12 @@ foreach (['MntExe', 'MntNeto', 'MntIVA', 'MntTotal'] as $m) {
         $resumen[$m] = num($resumen[$m]);
     }
 }
+$resumen['TpoDoc'] = $DteTmp->getDte()->tipo;
 $resumen['FchDoc'] = \sowerphp\general\Utility_Date::format($resumen['FchDoc']);
+$resumen['CdgSIISucur'] = $Emisor->getSucursal($resumen['CdgSIISucur'])->sucursal;
+unset($resumen['NroDoc'], $resumen['TasaImp']);
 new \sowerphp\general\View_Helper_Table([
-    ['Tipo', 'Folio', 'Tasa IVA', 'Fecha emisión', 'Sucursal SII', 'RUT receptor', 'Razón social receptor', 'Exento', 'Neto', 'IVA', 'Total'],
+    ['Documento', 'Fecha emisión', 'Sucursal', 'RUT receptor', 'Razón social receptor', 'Exento', 'Neto', 'IVA', 'Total'],
     $resumen
 ]);
 ?>

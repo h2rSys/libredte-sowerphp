@@ -18,6 +18,7 @@ foreach ($documentos as &$d) {
     $acciones .= ' <a href="'.$_base.'/dte/dte_emitidos/pdf/'.$d['dte'].'/'.$d['folio'].'/'.(int)$Emisor->config_pdf_dte_cedible.'" title="Descargar PDF del documento"><span class="fa fa-file-pdf-o btn btn-default"></span></a>';
     $d[] = $acciones;
     $d['total'] = num($d['total']);
+    $d['sucursal_sii'] = $Emisor->getSucursal($d['sucursal_sii'])->sucursal;
     unset($d['dte']);
 }
 $f = new \sowerphp\general\View_Helper_Form(false);
@@ -29,10 +30,11 @@ array_unshift($documentos, [
     $f->input(['name'=>'total', 'value'=>(isset($search['total'])?$search['total']:''), 'check'=>'integer']),
     '',
     '',
+    $f->input(['type'=>'select', 'name'=>'sucursal_sii', 'options'=>[''=>'Todas'] + $sucursales, 'value'=>(isset($search['sucursal_sii'])?$search['sucursal_sii']:$sucursal)]),
     $f->input(['type'=>'select', 'name'=>'usuario', 'options'=>[''=>'Todos'] + $usuarios, 'value'=>(isset($search['usuario'])?$search['usuario']:'')]),
     '<button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search" aria-hidden="true"></span></button>',
 ]);
-array_unshift($documentos, ['Documento', 'Folio', 'Receptor', 'Fecha', 'Total', 'Estado SII', 'Intercambio', 'Usuario', 'Acciones']);
+array_unshift($documentos, ['Documento', 'Folio', 'Receptor', 'Fecha', 'Total', 'Estado SII', 'Intercambio', 'Sucursal', 'Usuario', 'Acciones']);
 
 // renderizar el mantenedor
 $maintainer = new \sowerphp\app\View_Helper_Maintainer([
@@ -40,5 +42,5 @@ $maintainer = new \sowerphp\app\View_Helper_Maintainer([
     'linkEnd' => $searchUrl,
 ]);
 $maintainer->setId('dte_emitidos_'.$Emisor->rut);
-$maintainer->setColsWidth([null, null, null, null, null, null, null, null, 100]);
+$maintainer->setColsWidth([null, null, null, null, null, null, null, null, null, 100]);
 echo $maintainer->listar ($documentos, $paginas, $pagina, false);

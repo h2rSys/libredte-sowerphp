@@ -251,10 +251,31 @@ class Controller_Contribuyentes extends \Controller_App
      * Método que prepara los datos de configuraciones del contribuyente para
      * ser guardados
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-15
+     * @version 2016-07-12
      */
     private function prepararDatosContribuyente(&$Contribuyente)
     {
+        // crear arreglo con sucursales
+        if (!empty($_POST['config_extra_sucursales_codigo'])) {
+            $_POST['config_extra_sucursales'] = [];
+            $n_codigos = count($_POST['config_extra_sucursales_codigo']);
+            for ($i=0; $i<$n_codigos; $i++) {
+                if (!empty($_POST['config_extra_sucursales_codigo'][$i]) and !empty($_POST['config_extra_sucursales_sucursal'][$i]) and !empty($_POST['config_extra_sucursales_direccion'][$i]) and !empty($_POST['config_extra_sucursales_comuna'][$i])) {
+                    $_POST['config_extra_sucursales'][] = [
+                        'codigo' => (int)$_POST['config_extra_sucursales_codigo'][$i],
+                        'sucursal' => $_POST['config_extra_sucursales_sucursal'][$i],
+                        'direccion' => $_POST['config_extra_sucursales_direccion'][$i],
+                        'comuna' => $_POST['config_extra_sucursales_comuna'][$i],
+                    ];
+                }
+            }
+            unset($_POST['config_extra_sucursales_codigo']);
+            unset($_POST['config_extra_sucursales_sucursal']);
+            unset($_POST['config_extra_sucursales_direccion']);
+            unset($_POST['config_extra_sucursales_comuna']);
+        } else {
+            $_POST['config_extra_sucursales'] = null;
+        }
         // crear arreglo de impuestos adicionales
         if (!empty($_POST['config_extra_impuestos_adicionales_codigo'])) {
             $_POST['config_extra_impuestos_adicionales'] = [];

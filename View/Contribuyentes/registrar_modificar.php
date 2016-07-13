@@ -100,6 +100,46 @@ echo $f->input([
     'options' => [''=>'Seleccionar una comuna'] + $comunas,
     'check' => 'notempty',
 ]);
+$config_extra_sucursales = [];
+if (isset($Contribuyente) and $Contribuyente->config_extra_sucursales) {
+    foreach ($Contribuyente->config_extra_sucursales as $sucursal) {
+        $config_extra_sucursales[] = [
+            'config_extra_sucursales_codigo' => $sucursal->codigo,
+            'config_extra_sucursales_sucursal' => $sucursal->sucursal,
+            'config_extra_sucursales_direccion' => $sucursal->direccion,
+            'config_extra_sucursales_comuna' => $sucursal->comuna,
+        ];
+    }
+}
+echo $f->input([
+    'type' => 'js',
+    'id' => 'sucursales',
+    'label' => 'Sucursales',
+    'titles' => ['Código SII', 'Nombre', 'Dirección', 'Comuna'],
+    'inputs' => [
+        [
+            'name' => 'config_extra_sucursales_codigo',
+            'check' => 'notempty integer',
+        ],
+        [
+            'name' => 'config_extra_sucursales_sucursal',
+            'check' => 'notempty',
+        ],
+        [
+            'name' => 'config_extra_sucursales_direccion',
+            'check' => 'notempty',
+            'attr' => 'maxlength="70"',
+        ],
+        [
+            'type' => 'select',
+            'name' => 'config_extra_sucursales_comuna',
+            'options' => [''=>'Seleccionar una comuna'] + $comunas,
+            'check' => 'notempty',
+        ]
+    ],
+    'values' => $config_extra_sucursales,
+    'help' => 'Sucursales de la empresa con código asignado por el SII',
+]);
 echo $f->input([
     'name' => 'telefono',
     'label' => 'Teléfono',

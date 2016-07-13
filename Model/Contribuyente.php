@@ -758,7 +758,7 @@ class Model_Contribuyente extends \Model_App
     /**
      * Método que entrega el listado de documentos emitidos por el contribuyente
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-01
+     * @version 2016-07-13
      */
     public function getDocumentosEmitidos($filtros = [])
     {
@@ -799,9 +799,17 @@ class Model_Contribuyente extends \Model_App
             $where[] = 'd.total <= :total_hasta';
             $vars[':total_hasta'] = $filtros['total_hasta'];
         }
+        if (isset($filtros['sucursal_sii']) and $filtros['sucursal_sii']!=-1) {
+            if ($filtros['sucursal_sii']) {
+                $where[] = 'd.sucursal_sii = :sucursal_sii';
+                $vars[':sucursal_sii'] = $filtros['sucursal_sii'];
+            } else {
+                $where[] = 'd.sucursal_sii IS NULL';
+            }
+        }
         // armar consulta
         $query = '
-            SELECT d.dte, t.tipo, d.folio, r.razon_social, d.fecha, d.total, d.revision_estado AS estado, i.glosa AS intercambio, u.usuario
+            SELECT d.dte, t.tipo, d.folio, r.razon_social, d.fecha, d.total, d.revision_estado AS estado, i.glosa AS intercambio, d.sucursal_sii, u.usuario
             FROM
                 dte_emitido AS d LEFT JOIN dte_intercambio_resultado_dte AS i
                     ON i.emisor = d.emisor AND i.dte = d.dte AND i.folio = d.folio AND i.certificacion = d.certificacion,
@@ -1750,6 +1758,49 @@ class Model_Contribuyente extends \Model_App
                 AND track_id IS NOT NULL
                 AND (revision_estado IS NULL OR revision_estado = \'-11\')
         ', [':rut'=>$this->rut, ':certificacion'=>(int)$this->config_ambiente_en_certificacion]);
+    }
+
+    /**
+     * Método que entrega el listado de sucursales del contribuyente (se incluye
+     * la casa matriz)
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-07-13
+     */
+    public function getSucursales()
+    {
+        $sucursales = [0=>'Casa matriz ('.$this->direccion.', '.$this->getComuna()->comuna.')'];
+        if ($this->config_extra_sucursales) {
+            foreach ($this->config_extra_sucursales as $sucursal) {
+                $comuna = (new \sowerphp\app\Sistema\General\DivisionGeopolitica\Model_Comunas())->get($sucursal->comuna)->comuna;
+                $sucursales[$sucursal->codigo] = $sucursal->sucursal.' ('.$sucursal->direccion.', '.$comuna.')';
+            }
+        }
+        return $sucursales;
+    }
+
+    /**
+     * Método que entrega el objeto de la sucursal del contribuyente a partir
+     * del código de la sucursal (por defecto casa matriz)
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-07-13
+     */
+    public function getSucursal($codigo = null)
+    {
+        // si se pasó código se busca sucursal
+        if ($codigo and $this->config_extra_sucursales) {
+            foreach ($this->config_extra_sucursales as $sucursal) {
+                if ($sucursal->codigo == $codigo) {
+                    return $sucursal;
+                }
+            }
+        }
+        // si no se pasó código o no se encontró se entrega sucursal matriz
+        return (object)[
+            'codigo' => 0,
+            'sucursal' => 'Casa matriz',
+            'direccion' => $this->direccion,
+            'comuna' => $this->comuna,
+        ];
     }
 
     /**

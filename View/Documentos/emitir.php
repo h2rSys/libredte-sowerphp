@@ -17,12 +17,12 @@ echo $f->begin(['id'=>'emitir_dte', 'focus'=>'RUTRecepField', 'action'=>$_base.'
     </div>
     <!-- DATOS DEL EMISOR -->
     <div class="row">
-        <div class="form-group col-md-3"><?=$f->input(['name'=>'GiroEmis', 'placeholder' => 'Giro del emisor', 'value'=>(isset($DteEmisor)?(isset($DteEmisor['GiroEmis'])?$DteEmisor['GiroEmis']:$DteEmisor['GiroEmisor']):$Emisor->giro), 'check' => 'notempty', 'attr' => 'maxlength="80"'])?></div>
+        <div class="form-group col-md-3"><?=$f->input(['name'=>'GiroEmis', 'placeholder' => 'Giro del emisor', 'popover' => 'Giro del emisor del DTE', 'value'=>(isset($DteEmisor)?(isset($DteEmisor['GiroEmis'])?$DteEmisor['GiroEmis']:$DteEmisor['GiroEmisor']):$Emisor->giro), 'check' => 'notempty', 'attr' => 'maxlength="80"'])?></div>
         <div class="form-group col-md-3"><?=$f->input(['type' => 'select', 'name' => 'Acteco', 'options' => $actividades_economicas, 'value'=>((isset($DteEmisor) and isset($DteEmisor['Acteco']))?$DteEmisor['Acteco']:$Emisor->actividad_economica), 'check' => 'notempty'])?></div>
-        <div class="form-group col-md-3"><?=$f->input(['name' => 'DirOrigen', 'placeholder' => 'Dirección del emisor', 'value'=>(isset($DteEmisor['DirOrigen'])?$DteEmisor['DirOrigen']:$Emisor->direccion), 'check' => 'notempty', 'attr' => 'maxlength="70"'])?></div>
-        <div class="form-group col-md-3"><?=$f->input(['type' => 'select', 'name' => 'CmnaOrigen', 'value' => (isset($DteEmisor)?$DteEmisor['CmnaOrigen']:$Emisor->comuna), 'options' => $comunas, 'check' => 'notempty'])?></div>
+        <div class="form-group col-md-4"><?=$f->input(['type' => 'select', 'name' => 'CdgSIISucur', 'value' => ((isset($DteEmisor)and!empty($DteEmisor['CdgSIISucur']))?$DteEmisor['CdgSIISucur']:$sucursal), 'options' => $sucursales])?></div>
+        <div class="form-group col-md-2"><?=$f->input(['name'=>'CdgVendedor', 'placeholder' => 'Código vendedor', 'popover' => 'Código del vendedor asociado al DTE', 'value'=>((isset($DteEmisor)and!empty($DteEmisor['CdgVendedor']))?$DteEmisor['CdgVendedor']:$_Auth->User->usuario), 'check' => 'notempty', 'attr' => 'maxlength="60"'])?></div>
     </div>
-    <p>(*) modificar los datos del emisor (giro, actividad económica y/o dirección) sólo afectará a la emisión de este documento, no se guardarán estos cambios.</p>
+    <p>(*) modificar el giro y/o actividad económica del emisor sólo afectará a la emisión de este documento, no se guardarán estos cambios.</p>
     <!-- DATOS DEL RECEPTOR -->
     <div class="row">
         <div class="form-group col-md-3">

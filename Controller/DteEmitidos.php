@@ -46,7 +46,7 @@ class Controller_DteEmitidos extends \Controller_App
     /**
      * Acción que permite mostrar los documentos emitidos por el contribuyente
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-05-25
+     * @version 2016-07-13
      */
     public function listar($pagina = 1)
     {
@@ -88,6 +88,8 @@ class Controller_DteEmitidos extends \Controller_App
             'pagina' => $pagina,
             'search' => $filtros,
             'tipos_dte' => $Emisor->getDocumentosAutorizados(),
+            'sucursales' => $Emisor->getSucursales(),
+            'sucursal' => -1, // TODO: sucursal por defecto
             'usuarios' => $Emisor->getListUsuarios(),
             'searchUrl' => $searchUrl,
         ]);
