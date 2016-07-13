@@ -160,7 +160,7 @@ class Controller_Documentos extends \Controller_App
      * enviado al SII. Luego se debe usar la función generar de la API para
      * generar el DTE final y enviarlo al SII.
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-27
+     * @version 2016-07-13
      */
     public function _api_emitir_POST()
     {
@@ -227,6 +227,12 @@ class Controller_Documentos extends \Controller_App
             ]
         ];
         $dte = \sowerphp\core\Utility_Array::mergeRecursiveDistinct($default, $this->Api->data);
+        // corregir dirección sucursal si se indicó
+        if (!empty($dte['Encabezado']['Emisor']['CdgSIISucur'])) {
+            $sucursal = $Emisor->getSucursal($dte['Encabezado']['Emisor']['CdgSIISucur']);
+            $dte['Encabezado']['Emisor']['DirOrigen'] = $sucursal->direccion;
+            $dte['Encabezado']['Emisor']['CmnaOrigen'] = (new \sowerphp\app\Sistema\General\DivisionGeopolitica\Model_Comunas())->get($sucursal->comuna)->comuna;
+        }
         // verificar tipo de documento
         $dte['Encabezado']['IdDoc']['TipoDTE'] = $this->getTipoDTE(
             $dte['Encabezado']['IdDoc']['TipoDTE'], $dte['Detalle']
