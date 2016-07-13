@@ -41,7 +41,7 @@ class Model_DteTipos extends \Model_Plural_App
     /**
      * Método que entrega el listado de tipos de documentos tributarios
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2015-09-27
+     * @version 2016-07-13
      */
     public function getList($all = false)
     {
@@ -49,16 +49,32 @@ class Model_DteTipos extends \Model_Plural_App
             return $this->db->getTable('
                 SELECT codigo, '.$this->db->concat('codigo', ' - ', 'tipo').'
                 FROM dte_tipo
+                WHERE codigo < 800
                 ORDER BY codigo
             ');
         } else {
             return $this->db->getTable('
                 SELECT codigo, '.$this->db->concat('codigo', ' - ', 'tipo').'
                 FROM dte_tipo
-                WHERE electronico = true
+                WHERE codigo < 800 AND electronico = true
                 ORDER BY codigo
             ');
         }
+    }
+
+    /**
+     * Método que entrega el listado de todos los tipos de documentos que se
+     * pueden usar como referencias
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-07-13
+     */
+    public function getListReferencias()
+    {
+        return $this->db->getTable('
+            SELECT codigo, '.$this->db->concat('codigo', ' - ', 'tipo').'
+            FROM dte_tipo
+            ORDER BY codigo
+        ');
     }
 
 }

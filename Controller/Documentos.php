@@ -309,7 +309,7 @@ class Controller_Documentos extends \Controller_App
             'comunas' => (new \sowerphp\app\Sistema\General\DivisionGeopolitica\Model_Comunas())->getList(),
             'tasa' => \sasco\LibreDTE\Sii::getIVA(),
             'tipos_dte_autorizados' => $Emisor->getDocumentosAutorizados(),
-            'tipos_dte' => (new \website\Dte\Admin\Mantenedores\Model_DteTipos())->getList(true),
+            'tipos_dte_referencia' => (new \website\Dte\Admin\Mantenedores\Model_DteTipos())->getListReferencias(),
             'tipos_referencia' => (new \website\Dte\Admin\Mantenedores\Model_DteReferenciaTipos())->getList(),
             'IndTraslado' => $this->IndTraslado,
             'codigos' => (new \website\Dte\Admin\Model_Itemes())->getCodigos($Emisor->rut),
