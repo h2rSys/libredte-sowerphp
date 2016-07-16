@@ -265,7 +265,7 @@ class Controller_DteEmitidos extends \Controller_App
     /**
      * Acción que descarga el PDF del documento emitido
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-21
+     * @version 2016-07-15
      */
     public function pdf($dte, $folio, $cedible = false, $emisor = null, $fecha = null, $total = null)
     {
@@ -304,7 +304,7 @@ class Controller_DteEmitidos extends \Controller_App
         $webVerificacion = $this->request->url.'/boletas';
         $data = [
             'xml' => $DteEmitido->xml,
-            'cedible' => !in_array($DteEmitido->dte, [39,41]) ? $cedible : false,
+            'cedible' => $cedible,
             'papelContinuo' => $Emisor->config_pdf_dte_papel,
             'compress' => false,
             'webVerificacion' => in_array($DteEmitido->dte, [39,41]) ? $webVerificacion : false,
