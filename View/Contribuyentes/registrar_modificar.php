@@ -316,7 +316,7 @@ $f->setColsLabel();
     <div class="panel panel-default">
         <div class="panel-heading">
             <i class="fa fa-send-o"></i>
-            Configuración emisión y recepción DTE
+            Configuración emisión DTE
         </div>
         <div class="panel-body">
 <?php
@@ -327,7 +327,6 @@ echo $f->input([
     'options' => ['No', 'Si'],
     'value' => isset($Contribuyente) ? $Contribuyente->config_sii_envio_automatico : 0,
     'help' => '¿Se deben enviar automáticamente los DTE al SII sin pasar por previsualización?',
-    'check' => 'notempty',
 ]);
 echo $f->input([
     'type' => 'select',
@@ -336,7 +335,14 @@ echo $f->input([
     'options' => ['No', 'Si'],
     'value' => isset($Contribuyente) ? $Contribuyente->config_extra_exenta : 0,
     'help' => '¿El contribuyente es exento de IVA en todas sus actividades económicas?',
-    'check' => 'notempty',
+]);
+echo $f->input([
+    'type' => 'select',
+    'name' => 'config_extra_indicador_servicio',
+    'label' => 'Indicador servicio',
+    'options' => [''=>'No', 4=>'Servicios de hotelería'],
+    'value' => isset($Contribuyente) ? $Contribuyente->config_extra_indicador_servicio : 0,
+    'help' => '¿Se debe usar un indicador de servicio por defecto?',
 ]);
 /*echo $f->input([
     'type' => 'select',
@@ -345,7 +351,6 @@ echo $f->input([
     'options' => ['No', 'Si'],
     'value' => isset($Contribuyente) ? $Contribuyente->config_extra_constructora : 0,
     'help' => '¿El contribuyente es una empresa constructora (para crédito del 65%)?',
-    'check' => 'notempty',
 ]);*/
 echo $f->input([
     'type' => 'select',
@@ -354,7 +359,6 @@ echo $f->input([
     'options' => ['No', 'Si'],
     'value' => isset($Contribuyente) ? $Contribuyente->config_extra_agente_retenedor : 0,
     'help' => '¿El contribuyente actúa como agente retenedor de algún producto?',
-    'check' => 'notempty',
 ]);
 $config_extra_impuestos_adicionales = [];
 if (isset($Contribuyente) and $Contribuyente->config_extra_impuestos_adicionales) {
@@ -444,7 +448,6 @@ echo $f->input([
     'options' => ['Hoja carta', 75=>'Papel contínuo 75mm', 80=>'Papel contínuo 80mm'],
     'value' => isset($Contribuyente) ? $Contribuyente->config_pdf_dte_papel : 0,
     'help' => 'Permite indicar si se usará hoja carta en las versiones en PDF del DTE o bien papel contínuo',
-    'check' => 'notempty',
 ]);
 echo $f->input([
     'type' => 'select',
@@ -453,7 +456,6 @@ echo $f->input([
     'options' => ['No', 'Si'],
     'value' => isset($Contribuyente) ? $Contribuyente->config_pdf_dte_cedible : 0,
     'help' => '¿Se debe incluir la copia cedible por defecto en los PDF?',
-    'check' => 'notempty',
 ]);
 ?>
         </div>
@@ -489,7 +491,6 @@ echo $f->input([
     'options' => ['Correo electrónico (más lento pero con detalles)', 'Servicio web (más rápido pero sin detalles)'],
     'value' => isset($Contribuyente) ? $Contribuyente->config_sii_estado_dte_webservice : 0,
     'help' => 'Permite definir cómo se consultará el estado de los DTE emitidos por defecto en la aplicación web',
-    'check' => 'notempty',
 ]);
 ?>
         </div>
@@ -508,7 +509,6 @@ echo $f->input([
     'options' => ['No', 'Si'],
     'value' => isset($Contribuyente) ? $Contribuyente->config_app_soporte : 0,
     'help' => 'Se permite al equipo de soporte de LibreDTE trabajar con el contribuyente',
-    'check' => 'notempty',
 ]);
 ?>
         </div>
