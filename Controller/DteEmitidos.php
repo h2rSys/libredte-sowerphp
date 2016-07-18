@@ -168,32 +168,22 @@ class Controller_DteEmitidos extends \Controller_App
      * @param folio Folio del DTE
      * @param timbrar =true se volverá a timbrar el DTE, por defecto =false (solo tiene efecto si el DTE se puede reenviar)
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-11
+     * @version 2016-07-18
      */
     public function enviar_sii($dte, $folio, $timbrar = false)
     {
         $Emisor = $this->getContribuyente();
-        // si es boleta no se puede enviar
-        if (in_array($dte, [39, 41])) {
-            \sowerphp\core\Model_Datasource_Session::message(
-                'Documento de tipo '.$dte.' no se envía al SII', 'warning'
-            );
-            $this->redirect(str_replace('enviar_sii', 'ver', $this->request->request));
+        $rest = new \sowerphp\core\Network_Http_Rest();
+        $rest->setAuth($this->Auth->User->hash);
+        $response = $rest->get($this->request->url.'/api/dte/dte_emitidos/enviar_sii/'.$dte.'/'.$folio.'/'.$Emisor->rut.'?timbrar='.(int)$timbrar);
+        if ($response===false) {
+            \sowerphp\core\Model_Datasource_Session::message(implode('<br/>', $rest->getErrors()), 'error');
         }
-        // obtener DTE emitido
-        $DteEmitido = new Model_DteEmitido($Emisor->rut, $dte, $folio, (int)$Emisor->config_ambiente_en_certificacion);
-        if (!$DteEmitido->exists()) {
-            \sowerphp\core\Model_Datasource_Session::message(
-                'No existe el DTE solicitado', 'error'
-            );
-            $this->redirect('/dte/dte_emitidos/listar');
+        else if ($response['status']['code']!=200) {
+            \sowerphp\core\Model_Datasource_Session::message($response['body'], 'error');
         }
-        // enviar DTE (si no se puede enviar se generará excepción)
-        try {
-            $DteEmitido->enviar($this->Auth->User->id, $timbrar);
-            \sowerphp\core\Model_Datasource_Session::message('DTE enviado al SII', 'ok');
-        } catch (\Exception $e) {
-            \sowerphp\core\Model_Datasource_Session::message($e->getMessage(), 'error');
+        else {
+            \sowerphp\core\Model_Datasource_Session::message('Se envió el DTE al SII', 'ok');
         }
         $this->redirect(str_replace('enviar_sii', 'ver', $this->request->request));
     }
@@ -240,7 +230,7 @@ class Controller_DteEmitidos extends \Controller_App
     /**
      * Acción que actualiza el estado del envío del DTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-11
+     * @version 2016-07-18
      */
     public function actualizar_estado($dte, $folio, $usarWebservice = null)
     {
@@ -249,7 +239,7 @@ class Controller_DteEmitidos extends \Controller_App
             $usarWebservice = $Emisor->config_sii_estado_dte_webservice;
         $rest = new \sowerphp\core\Network_Http_Rest();
         $rest->setAuth($this->Auth->User->hash);
-        $response = $rest->get($this->request->url.'/api/dte/dte_emitidos/actualizar_estado/'.$dte.'/'.$folio.'/'.$Emisor->rut.'/'.(int)$usarWebservice);
+        $response = $rest->get($this->request->url.'/api/dte/dte_emitidos/actualizar_estado/'.$dte.'/'.$folio.'/'.$Emisor->rut.'?usarWebservice='.(int)$usarWebservice);
         if ($response===false) {
             \sowerphp\core\Model_Datasource_Session::message(implode('<br/>', $rest->getErrors()), 'error');
         }
@@ -756,10 +746,11 @@ class Controller_DteEmitidos extends \Controller_App
     /**
      * Acción de la API que permite actualizar el estado de envio del DTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-07-02
+     * @version 2016-07-18
      */
-    public function _api_actualizar_estado_GET($dte, $folio, $emisor, $usarWebservice = true)
+    public function _api_actualizar_estado_GET($dte, $folio, $emisor)
     {
+        extract($this->Api->getQuery(['usarWebservice'=>true]));
         // verificar permisos y crear DteEmitido
         if ($this->Auth->User) {
             $User = $this->Auth->User;
@@ -782,6 +773,53 @@ class Controller_DteEmitidos extends \Controller_App
         // actualizar estado
         try {
             $this->Api->send($DteEmitido->actualizarEstado($User->id, $usarWebservice), 200, JSON_PRETTY_PRINT);
+        } catch (\Exception $e) {
+            $this->Api->send($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Recurso de la API que envía el DTE al SII si este no ha sido envíado (no
+     * tiene track_id) o bien si se solicita reenviar (tiene track id) y está
+     * rechazado (no se permite reenviar documentos que estén aceptados o
+     * aceptados con reparos (flag generar no tendrá efecto si no se cumple esto)
+     * @param dte Tipo de DTE
+     * @param folio Folio del DTE
+     * @param timbrar =true se volverá a timbrar el DTE, por defecto =false (solo tiene efecto si el DTE se puede reenviar)
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-07-18
+     */
+    public function _api_enviar_sii_GET($dte, $folio, $emisor)
+    {
+        extract($this->Api->getQuery(['timbrar'=>true]));
+        // verificar permisos y crear DteEmitido
+        if ($this->Auth->User) {
+            $User = $this->Auth->User;
+        } else {
+            $User = $this->Api->getAuthUser();
+            if (is_string($User)) {
+                $this->Api->send($User, 401);
+            }
+        }
+        $Emisor = new Model_Contribuyente($emisor);
+        if (!$Emisor->exists()) {
+                $this->Api->send('Emisor no existe', 404);
+        }
+        if (!$Emisor->usuarioAutorizado($User, '/dte/dte_emitidos/actualizar_estado')) {
+            $this->Api->send('No está autorizado a operar con la empresa solicitada', 403);
+        }
+        $DteEmitido = new Model_DteEmitido($Emisor->rut, (int)$dte, (int)$folio, (int)$Emisor->config_ambiente_en_certificacion);
+        if (!$DteEmitido->exists()) {
+            $this->Api->send('No existe el documento solicitado T'.$dte.'F'.$folio, 404);
+        }
+        // si es boleta no se puede enviar
+        if (in_array($dte, [39, 41])) {
+            $this->Api->send('Documento de tipo '.$dte.' no se envía al SII', 400);
+        }
+        // enviar DTE (si no se puede enviar se generará excepción)
+        try {
+            $DteEmitido->enviar($User->id, $timbrar);
+            return $DteEmitido;
         } catch (\Exception $e) {
             $this->Api->send($e->getMessage(), 500);
         }
