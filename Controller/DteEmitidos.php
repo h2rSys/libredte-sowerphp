@@ -821,7 +821,7 @@ class Controller_DteEmitidos extends \Controller_App
             $DteEmitido->enviar($User->id, $timbrar);
             return $DteEmitido;
         } catch (\Exception $e) {
-            $this->Api->send($e->getMessage(), 500);
+            $this->Api->send($e->getMessage(), 502);
         }
     }
 
