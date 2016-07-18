@@ -21,10 +21,12 @@ $(function() {
 <div role="tabpanel">
     <ul class="nav nav-tabs" role="tablist">
         <li role="presentation" class="active"><a href="#datos" aria-controls="datos" role="tab" data-toggle="tab">Datos básicos</a></li>
+        <li role="presentation"><a href="#pdf" aria-controls="pdf" role="tab" data-toggle="tab">PDF</a></li>
         <li role="presentation"><a href="#email" aria-controls="email" role="tab" data-toggle="tab">Enviar por email</a></li>
         <li role="presentation"><a href="#intercambio" aria-controls="intercambio" role="tab" data-toggle="tab">Resultado intercambio</a></li>
         <li role="presentation"><a href="#cobranza" aria-controls="cobranza" role="tab" data-toggle="tab">Cobranza</a></li>
         <li role="presentation"><a href="#referencias" aria-controls="referencias" role="tab" data-toggle="tab">Referencias</a></li>
+        <li role="presentation"><a href="#avanzado" aria-controls="avanzado" role="tab" data-toggle="tab">Avanzado</a></li>
     </ul>
     <div class="tab-content">
 
@@ -94,6 +96,26 @@ new \sowerphp\general\View_Helper_Table([
 </div>
 <!-- FIN DATOS BÁSICOS -->
 
+<!-- INICIO PDF -->
+<div role="tabpanel" class="tab-pane" id="pdf">
+<?php
+$f = new \sowerphp\general\View_Helper_Form();
+echo $f->begin(['action'=>$_base.'/dte/dte_emitidos/pdf/'.$DteEmitido->dte.'/'.$DteEmitido->folio, 'id'=>'pdfForm', 'onsubmit'=>'Form.check(\'pdfForm\')']);
+echo $f->input([
+    'type' => 'select',
+    'name' => 'papelContinuo',
+    'label' => 'Tipo papel',
+    'options' => \sasco\LibreDTE\Sii\PDF\Dte::$papel,
+    'value' => $Emisor->config_pdf_dte_papel,
+    'check' => 'notempty',
+]);
+echo $f->input(['name'=>'copias_tributarias', 'label'=>'Copias tributarias', 'value'=>(int)$Emisor->config_pdf_copias_tributarias, 'check'=>'notempty integer']);
+echo $f->input(['name'=>'copias_cedibles', 'label'=>'Copias cedibles', 'value'=>(int)$Emisor->config_pdf_copias_cedibles, 'check'=>'notempty integer']);
+echo $f->end('Descargar PDF');
+?>
+</div>
+<!-- FIN PDF -->
+
 <!-- INICIO ENVIAR POR EMAIL -->
 <div role="tabpanel" class="tab-pane" id="email">
 <?php
@@ -121,8 +143,7 @@ if ($emails) {
         if ($k=='Email intercambio')
             $checked = [$e];
     }
-    $f = new \sowerphp\general\View_Helper_Form();
-    echo $f->begin(['action'=>$_base.'/dte/dte_emitidos/enviar_email/'.$DteEmitido->dte.'/'.$DteEmitido->folio]);
+    echo $f->begin(['action'=>$_base.'/dte/dte_emitidos/enviar_email/'.$DteEmitido->dte.'/'.$DteEmitido->folio, 'id'=>'emailForm', 'onsubmit'=>'Form.check(\'emailForm\')']);
     echo $f->input([
         'type' => 'tablecheck',
         'name' => 'emails',
@@ -268,6 +289,59 @@ if ($referencias) {
 </div>
 </div>
 <!-- FIN REFERENCIAS -->
+
+<!-- INICIO AVANZADO -->
+<div role="tabpanel" class="tab-pane" id="avanzado">
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <i class="fa fa-send-o"></i>
+        Track ID o identificador del envío
+    </div>
+    <div class="panel-body">
+<?php
+// permitir cambiar el track id
+echo $f->begin([
+    'action' => $_base.'/dte/dte_emitidos/avanzado_track_id/'.$DteEmitido->dte.'/'.$DteEmitido->folio,
+    'id' => 'avanzadoTrackIdForm',
+    'onsubmit' => 'Form.check(\'avanzadoTrackIdForm\') && Form.checkSend(\'¿Está seguro de querer cambiar el Track ID?\n\n¡Perderá el valor actual!\')'
+]);
+echo $f->input([
+    'name' => 'track_id',
+    'label' => 'Track ID',
+    'value' => $DteEmitido->track_id, 'check'=>'notempty integer',
+    'help' => 'Identificador de envío del XML del DTE al SII',
+]);
+echo $f->end('Modificar Track ID');
+?>
+    </div>
+</div>
+<?php
+// si es exportación permitir cambiar tipo de cambio
+if ($DteEmitido->getDte()->esExportacion()) :
+?>
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <i class="fa fa-dollar"></i>
+        Tipo de cambio para valor en pesos (CLP)
+    </div>
+    <div class="panel-body">
+<?php
+    echo $f->begin([
+        'action' => $_base.'/dte/dte_emitidos/avanzado_tipo_cambio/'.$DteEmitido->dte.'/'.$DteEmitido->folio,
+        'id' => 'avanzadoTipoCambioForm',
+        'onsubmit' => 'Form.check(\'avanzadoTipoCambioForm\') && Form.checkSend(\'¿Está seguro de querer modificar el tipo de cambio del documento?\')'
+    ]);
+    echo $f->input([
+        'name' => 'tipo_cambio',
+        'label' => 'Tipo de cambio',
+        'check' => 'notempty real',
+        'help' => 'Monto en pesos (CLP) equivalente a 1 '.$DteEmitido->getDte()->getMoneda(),
+    ]);
+    echo $f->end('Modificar el tipo de cambio');
+endif;
+?>
+</div>
+<!-- FIN AVANZADO -->
 
     </div>
 </div>

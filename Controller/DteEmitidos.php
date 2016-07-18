@@ -304,10 +304,12 @@ class Controller_DteEmitidos extends \Controller_App
         $webVerificacion = $this->request->url.'/boletas';
         $data = [
             'xml' => $DteEmitido->xml,
-            'cedible' => $cedible,
-            'papelContinuo' => $Emisor->config_pdf_dte_papel,
+            'cedible' => isset($_POST['copias_cedibles']) ? (int)(bool)$_POST['copias_cedibles'] : $cedible,
+            'papelContinuo' => isset($_POST['papelContinuo']) ? $_POST['papelContinuo'] : $Emisor->config_pdf_dte_papel,
             'compress' => false,
             'webVerificacion' => in_array($DteEmitido->dte, [39,41]) ? $webVerificacion : false,
+            'copias_tributarias' => isset($_POST['copias_tributarias']) ? (int)$_POST['copias_tributarias'] : 1,
+            'copias_cedibles' => isset($_POST['copias_cedibles']) ? (int)$_POST['copias_cedibles'] : $cedible,
         ];
         // realizar consulta a la API
         $rest = new \sowerphp\core\Network_Http_Rest();
@@ -477,6 +479,71 @@ class Controller_DteEmitidos extends \Controller_App
             );
             $this->redirect(str_replace('enviar_email', 'ver', $this->request->request).'#email');
         }
+    }
+
+    /**
+     * Acción que permite actualizar el track_id del DteEmitido
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-07-16
+     */
+    public function avanzado_track_id($dte, $folio)
+    {
+        $Emisor = $this->getContribuyente();
+        // obtener DTE emitido
+        $DteEmitido = new Model_DteEmitido($Emisor->rut, $dte, $folio, (int)$Emisor->config_ambiente_en_certificacion);
+        if (!$DteEmitido->exists()) {
+            \sowerphp\core\Model_Datasource_Session::message(
+                'No existe el DTE solicitado', 'error'
+            );
+            $this->redirect('/dte/dte_emitidos/listar');
+        }
+        // sólo administrador puede cambiar track id
+        if ($DteEmitido->usuario != $this->Auth->User->id) {
+            \sowerphp\core\Model_Datasource_Session::message('Sólo el administrador de la empresa puede cambiar el Track ID', 'error');
+            $this->redirect(str_replace('avanzado_track_id', 'ver', $this->request->request).'#avanzado');
+        }
+        // cambiar track id
+        $DteEmitido->track_id = (int)$_POST['track_id'];
+        $DteEmitido->revision_estado = null;
+        $DteEmitido->revision_detalle = null;
+        $DteEmitido->save();
+        \sowerphp\core\Model_Datasource_Session::message('Track ID actualizado', 'ok');
+        $this->redirect(str_replace('avanzado_track_id', 'ver', $this->request->request).'#avanzado');
+    }
+
+    /**
+     * Acción que permite actualizar el tipo de cambio de un documento de exportación
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-07-16
+     */
+    public function avanzado_tipo_cambio($dte, $folio)
+    {
+        $Emisor = $this->getContribuyente();
+        // obtener DTE emitido
+        $DteEmitido = new Model_DteEmitido($Emisor->rut, $dte, $folio, (int)$Emisor->config_ambiente_en_certificacion);
+        if (!$DteEmitido->exists()) {
+            \sowerphp\core\Model_Datasource_Session::message(
+                'No existe el DTE solicitado', 'error'
+            );
+            $this->redirect('/dte/dte_emitidos/listar');
+        }
+        // verificar que sea de exportación
+        if (!$DteEmitido->getDte()->esExportacion()) {
+            \sowerphp\core\Model_Datasource_Session::message(
+                'Documento no es de exportación', 'error'
+            );
+            $this->redirect(str_replace('avanzado_tipo_cambio', 'ver', $this->request->request).'#avanzado');
+        }
+        // sólo administrador puede cambiar el tipo de cambio
+        if ($DteEmitido->usuario != $this->Auth->User->id) {
+            \sowerphp\core\Model_Datasource_Session::message('Sólo el administrador de la empresa puede cambiar el tipo de cambio', 'error');
+            $this->redirect(str_replace('avanzado_tipo_cambio', 'ver', $this->request->request).'#avanzado');
+        }
+        // cambiar monto total
+        $DteEmitido->exento = $DteEmitido->total = abs(round($DteEmitido->getDte()->getMontoTotal() * (float)$_POST['tipo_cambio']));
+        $DteEmitido->save();
+        \sowerphp\core\Model_Datasource_Session::message('Monto en pesos (CLP) del DTE actualizado', 'ok');
+        $this->redirect(str_replace('avanzado_tipo_cambio', 'ver', $this->request->request));
     }
 
     /**

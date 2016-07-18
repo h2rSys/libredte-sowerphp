@@ -147,12 +147,53 @@ function DTE() {
     return;
 }
 
+DTE.parseInt = function (valor) {
+    var TpoDoc = parseInt(document.getElementById("TpoDocField").value);
+    if (TpoDoc!=110 && TpoDoc!=111 && TpoDoc!=112)
+        return parseInt(valor);
+    return parseFloat(valor);
+}
+
+DTE.round = function (valor) {
+    var TpoDoc = parseInt(document.getElementById("TpoDocField").value);
+    if (TpoDoc!=110 && TpoDoc!=111 && TpoDoc!=112)
+        return Math.round(valor);
+    return valor;
+}
+
 DTE.setTipo = function (tipo) {
     // habilitar u ocultar datos para guía de despacho
     if (tipo==52) {
         $('#datosTransporte').show();
     } else {
         $('#datosTransporte').hide();
+    }
+    // habilitar u ocultar datos para exportación
+    if (tipo==110 || tipo==111 || tipo==112) {
+        $('#modalBuscar').hide();
+        $('#RUTRecepField').removeAttr('onblur');
+        $('#RUTRecepField').attr('readonly', 'readonly');
+        $('#GiroRecepField').attr('disabled', 'disabled');
+        $('#CmnaRecepField').attr('disabled', 'disabled');
+        $('#TpoMonedaField').removeAttr('disabled');
+        $('#NacionalidadField').removeAttr('disabled');
+        $('#IndServicioField').removeAttr('disabled');
+        document.getElementById('RUTRecepField').value = '55.555.555-5';
+        document.getElementById('RznSocRecepField').focus();
+        document.getElementById('GiroRecepField').value = '';
+        document.getElementById('CmnaRecepField').value = '';
+        Form.addJS('referencias');
+        $('#datosExportacion').show();
+    } else {
+        $('#modalBuscar').show();
+        $('#RUTRecepField').attr('onblur', 'Receptor.setDatos(\'emitir_dte\')');
+        $('#RUTRecepField').removeAttr('readonly');
+        $('#GiroRecepField').removeAttr('disabled');
+        $('#CmnaRecepField').removeAttr('disabled');
+        $('#TpoMonedaField').attr('disabled', 'disabled');
+        $('#NacionalidadField').attr('disabled', 'disabled');
+        $('#IndServicioField').attr('disabled', 'disabled');
+        $('#datosExportacion').hide();
     }
     // agregar observación si existe
     document.getElementById("TermPagoGlosaField").value = (emision_observaciones !== null && emision_observaciones[tipo] !== undefined) ? emision_observaciones[tipo] : '';
@@ -225,11 +266,12 @@ DTE.setFechaReferencia = function (contribuyente, field) {
             url: _url+'/api/dte/dte_emitidos/info/'+dte+'/'+folio+'/'+contribuyente,
             dataType: "json",
             success: function (dte) {
-                cols[0].childNodes[0].childNodes[0].value = dte.fecha;
+                if (dte.fecha) {
+                    cols[0].childNodes[0].childNodes[0].value = dte.fecha;
+                }
             },
             error: function (jqXHR) {
                 console.log(jqXHR.responseJSON);
-                cols[0].childNodes[0].childNodes[0].value = "";
             }
         });
     }
@@ -241,19 +283,19 @@ DTE.calcular = function () {
     $('input[name="QtyItem[]"]').each(function (i, e) {
         if (!__.empty($(e).val()) && !__.empty($('input[name="PrcItem[]"]').get(i).value)) {
             // calcular subtotal sin aplicar descuento
-            $('input[name="subtotal[]"]').get(i).value = Math.round(parseFloat($('input[name="QtyItem[]"]').get(i).value) * parseFloat($('input[name="PrcItem[]"]').get(i).value));
+            $('input[name="subtotal[]"]').get(i).value = DTE.round(parseFloat($('input[name="QtyItem[]"]').get(i).value) * parseFloat($('input[name="PrcItem[]"]').get(i).value));
             // agregar descuento si aplica
             if (!__.empty($('input[name="ValorDR[]"]').get(i).value) && $('input[name="ValorDR[]"]').get(i).value!=0) {
                 if ($('select[name="TpoValor[]"]').get(i).selectedOptions[0].value=="%")
-                    descuento = Math.round($('input[name="subtotal[]"]').get(i).value * (parseInt($('input[name="ValorDR[]"]').get(i).value)/100.0));
+                    descuento = DTE.round($('input[name="subtotal[]"]').get(i).value * (DTE.parseInt($('input[name="ValorDR[]"]').get(i).value)/100.0));
                 else
-                    descuento = parseInt($('input[name="ValorDR[]"]').get(i).value);
+                    descuento = DTE.parseInt($('input[name="ValorDR[]"]').get(i).value);
                 $('input[name="subtotal[]"]').get(i).value -= descuento;
             }
             if (parseInt($('select[name="IndExe[]"]').get(i).selectedOptions[0].value)===1)
-                exento += parseInt($('input[name="subtotal[]"]').get(i).value);
+                exento += DTE.parseInt($('input[name="subtotal[]"]').get(i).value);
             else
-                neto += parseInt($('input[name="subtotal[]"]').get(i).value);
+                neto += DTE.parseInt($('input[name="subtotal[]"]').get(i).value);
             // si existe código de impuesto adicional se contabiliza
             if ($('select[name="CodImpAdic[]"]').get(i) !== undefined && $('select[name="CodImpAdic[]"]').get(i).value) {
                 CodImpAdic = $('select[name="CodImpAdic[]"]').get(i).value;
@@ -261,11 +303,11 @@ DTE.calcular = function () {
                     CodImpAdic_tasa = parseFloat(document.getElementById("impuesto_adicional_tasa_" + CodImpAdic + "Field").value);
                     // es adicional / anticipo
                     if (document.getElementById("impuesto_adicional_tipo_" + CodImpAdic + "Field").value == "A") {
-                        adicional += Math.round($('input[name="subtotal[]"]').get(i).value * (CodImpAdic_tasa/100.0));
+                        adicional += DTE.round($('input[name="subtotal[]"]').get(i).value * (CodImpAdic_tasa/100.0));
                     }
                     // es retención
                     else {
-                        retencion += Math.round($('input[name="subtotal[]"]').get(i).value * (CodImpAdic_tasa/100.0));
+                        retencion += DTE.round($('input[name="subtotal[]"]').get(i).value * (CodImpAdic_tasa/100.0));
                     }
                 }
             }
@@ -275,17 +317,17 @@ DTE.calcular = function () {
     if ($('select[name="TpoValor_global"]').length) {
         // calcular descuento global para neto
         if ($('select[name="TpoValor_global"]').get(0).selectedOptions[0].value=="%")
-            descuento = Math.round(neto * (parseInt($('input[name="ValorDR_global"]').get(0).value)/100.0));
+            descuento = DTE.round(neto * (DTE.parseInt($('input[name="ValorDR_global"]').get(0).value)/100.0));
         else
-            descuento = parseInt($('input[name="ValorDR_global"]').get(0).value);
+            descuento = DTE.parseInt($('input[name="ValorDR_global"]').get(0).value);
         neto -= descuento;
         if (neto<0)
             neto = 0;
         // calcular descuento global para exento
         if ($('select[name="TpoValor_global"]').get(0).selectedOptions[0].value=="%")
-            descuento = Math.round(exento * (parseInt($('input[name="ValorDR_global"]').get(0).value)/100.0));
+            descuento = DTE.round(exento * (DTE.parseInt($('input[name="ValorDR_global"]').get(0).value)/100.0));
         else
-            descuento = parseInt($('input[name="ValorDR_global"]').get(0).value);
+            descuento = DTE.parseInt($('input[name="ValorDR_global"]').get(0).value);
         exento -= descuento;
         if (exento<0)
             exento = 0;
@@ -294,8 +336,8 @@ DTE.calcular = function () {
     $('input[name="neto"]').val(neto);
     $('input[name="exento"]').val(exento)
     // asignar IVA y monto total
-    $('input[name="iva"]').val(Math.round(neto*(parseInt($('input[name="tasa"]').val())/100)));
-    $('input[name="total"]').val(neto + exento + parseInt($('input[name="iva"]').val()) + adicional - retencion);
+    $('input[name="iva"]').val(DTE.round(neto*(DTE.parseInt($('input[name="tasa"]').val())/100)));
+    $('input[name="total"]').val(neto + exento + DTE.parseInt($('input[name="iva"]').val()) + adicional - retencion);
 }
 
 DTE.check = function () {
@@ -347,7 +389,7 @@ DTE.check = function () {
             }
         }
         // si el documento es 34 o 41 forzar que todos los detalles sean exentos
-        if (TpoDoc==34 || TpoDoc==41) {
+        if (TpoDoc==34 || TpoDoc==41 || TpoDoc==110 || TpoDoc==111 || TpoDoc==112) {
             $('select[name="IndExe[]"]').get(i).value = 1;
         }
         // contabilizar items afectos
@@ -388,12 +430,6 @@ DTE.check = function () {
             status = false;
             return false;
         }
-        /*if (__.empty($('input[name="RazonRef[]"]').get(i).value)) {
-            alert ('En la línea '+(i+1)+' de referencia:'+"\n"+'Razón de la referencia no puede estar en blanco');
-            $('input[name="RazonRef[]"]').get(i).focus();
-            status = false;
-            return false;
-        }*/
     });
     if (!status)
         return false;
@@ -401,7 +437,7 @@ DTE.check = function () {
     if (document.getElementById("FmaPagoField").value==2 && $('input[name="MntPago[]"]').length) {
         monto_pago = 0;
         $('input[name="MntPago[]"]').each(function (i, m) {
-            monto_pago += parseInt(m.value);
+            monto_pago += DTE.parseInt(m.value);
         });
         if (monto_pago != $('input[name="total"]').val()) {
             alert('Monto de pago programado $' + __.num(monto_pago) + '.- no cuadra con el total del documento');

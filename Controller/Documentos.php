@@ -27,7 +27,7 @@ namespace website\Dte;
 /**
  * Clase para todas las acciones asociadas a documentos (incluyendo API)
  * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
- * @version 2016-01-29
+ * @version 2016-07-13
  */
 class Controller_Documentos extends \Controller_App
 {
@@ -43,6 +43,15 @@ class Controller_Documentos extends \Controller_App
         8 => 'Traslado para exportación. (no venta)',
         9 => 'Venta para exportación',
     ]; ///< tipos de traslado
+
+    private $IndServicio = [
+        4=>'Servicios de hotelería'
+    ]; ///< Tipos de indicadores de servicios
+
+    private $monedas = [
+        'DOLAR USA' => 'DOLAR USA',
+        'EURO' => 'EURO',
+    ]; // Tipo moneda para documentos de exportación
 
     /**
      * Método para permitir acciones sin estar autenticado
@@ -160,7 +169,7 @@ class Controller_Documentos extends \Controller_App
      * enviado al SII. Luego se debe usar la función generar de la API para
      * generar el DTE final y enviarlo al SII.
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-07-13
+     * @version 2016-07-15
      */
     public function _api_emitir_POST()
     {
@@ -250,7 +259,7 @@ class Controller_Documentos extends \Controller_App
         $DteTmp->dte = $resumen['TpoDoc'];
         $DteTmp->codigo = md5($DteTmp->datos);
         $DteTmp->fecha = $resumen['FchDoc'];
-        $DteTmp->total = $resumen['MntTotal'];
+        $DteTmp->total = !$Dte->esExportacion() ? $resumen['MntTotal'] : -1; // TODO: calcular monto en pesos
         try {
             if ($DteTmp->save()) {
                 return [
@@ -312,6 +321,9 @@ class Controller_Documentos extends \Controller_App
             'tipos_dte_referencia' => (new \website\Dte\Admin\Mantenedores\Model_DteTipos())->getListReferencias(),
             'tipos_referencia' => (new \website\Dte\Admin\Mantenedores\Model_DteReferenciaTipos())->getList(),
             'IndTraslado' => $this->IndTraslado,
+            'IndServicio' => $this->IndServicio,
+            'monedas' => $this->monedas,
+            'nacionalidades' => \sasco\LibreDTE\Sii\Aduana::getNacionalidades(),
             'codigos' => (new \website\Dte\Admin\Model_Itemes())->getCodigos($Emisor->rut),
             'impuesto_adicionales' => (new \website\Dte\Admin\Mantenedores\Model_ImpuestoAdicionales())->getListContribuyente($Emisor->config_extra_impuestos_adicionales),
             'ImpuestoAdicionales' => (new \website\Dte\Admin\Mantenedores\Model_ImpuestoAdicionales())->getObjectsContribuyente($Emisor->config_extra_impuestos_adicionales),
@@ -324,7 +336,7 @@ class Controller_Documentos extends \Controller_App
     /**
      * Acción para generar y mostrar previsualización de emisión de DTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-07-13
+     * @version 2016-07-15
      */
     public function previsualizacion()
     {
@@ -347,8 +359,19 @@ class Controller_Documentos extends \Controller_App
         $sucursal = $Emisor->getSucursal($_POST['CdgSIISucur']);
         $_POST['DirOrigen'] = $sucursal->direccion;
         $_POST['CmnaOrigen'] = (new \sowerphp\app\Sistema\General\DivisionGeopolitica\Model_Comunas())->get($sucursal->comuna)->comuna;
+        // si no se indicó el tipo de documento error
+        if (empty($_POST['TpoDoc'])) {
+            \sowerphp\core\Model_Datasource_Session::message(
+                'Debe indicar el tipo de documento a emitir'
+            );
+            $this->redirect('/dte/documentos/emitir');
+        }
         // revisar datos mínimos
-        $datos_minimos = ['TpoDoc', 'FchEmis', 'GiroEmis', 'Acteco', 'DirOrigen', 'CmnaOrigen', 'RUTRecep', 'RznSocRecep', 'GiroRecep', 'DirRecep', 'CmnaRecep', 'NmbItem'];
+        $datos_minimos = ['FchEmis', 'GiroEmis', 'Acteco', 'DirOrigen', 'CmnaOrigen', 'RUTRecep', 'RznSocRecep', 'DirRecep', 'NmbItem'];
+        if (!in_array($_POST['TpoDoc'], [110, 111, 112])) {
+            $datos_minimos[] = 'GiroRecep';
+            $datos_minimos[] = 'CmnaRecep';
+        }
         foreach ($datos_minimos as $attr) {
             if (empty($_POST[$attr])) {
                 \sowerphp\core\Model_Datasource_Session::message(
@@ -362,11 +385,15 @@ class Controller_Documentos extends \Controller_App
         $Receptor = new Model_Contribuyente($rut);
         $Receptor->dv = $dv;
         $Receptor->razon_social = $_POST['RznSocRecep'];
-        $Receptor->giro = substr($_POST['GiroRecep'], 0, 40);
+        if (!empty($_POST['GiroRecep'])) {
+            $Receptor->giro = substr($_POST['GiroRecep'], 0, 40);
+        }
         $Receptor->telefono = $_POST['Contacto'];
         $Receptor->email = $_POST['CorreoRecep'];
         $Receptor->direccion = $_POST['DirRecep'];
-        $Receptor->comuna = $_POST['CmnaRecep'];
+        if (!empty($_POST['CmnaRecep'])) {
+            $Receptor->comuna = $_POST['CmnaRecep'];
+        }
         // guardar receptor si no tiene usuario asociado
         if (!$Receptor->usuario) {
             $Receptor->modificado = date('Y-m-d H:i:s');
@@ -406,11 +433,11 @@ class Controller_Documentos extends \Controller_App
                 'Receptor' => [
                     'RUTRecep' => $Receptor->rut.'-'.$Receptor->dv,
                     'RznSocRecep' => $Receptor->razon_social,
-                    'GiroRecep' => $Receptor->giro,
+                    'GiroRecep' => !empty($_POST['GiroRecep']) ? $Receptor->giro : false,
                     'Contacto' => $Receptor->telefono ? $Receptor->telefono : false,
                     'CorreoRecep' => $Receptor->email ? $Receptor->email : false,
                     'DirRecep' => $Receptor->direccion,
-                    'CmnaRecep' => $Receptor->getComuna()->comuna,
+                    'CmnaRecep' => !empty($_POST['CmnaRecep']) ? $Receptor->getComuna()->comuna : false,
                 ],
             ],
         ];
@@ -452,6 +479,17 @@ class Controller_Documentos extends \Controller_App
                     'CmnaDest' => !empty($_POST['CmnaDest']) ? (new \sowerphp\app\Sistema\General\DivisionGeopolitica\Model_Comuna($_POST['CmnaDest']))->comuna : false,
                 ];
             }
+        }
+        // si hay indicador de servicio se agrega
+        if (!empty($_POST['IndServicio'])) {
+            $dte['Encabezado']['IdDoc']['IndServicio'] = $_POST['IndServicio'];
+        }
+        // agregar datos de exportación
+        if (in_array($dte['Encabezado']['IdDoc']['TipoDTE'], [110, 111, 112])) {
+            if (!empty($_POST['Nacionalidad'])) {
+                $dte['Encabezado']['Receptor']['Extranjero']['Nacionalidad'] = $_POST['Nacionalidad'];
+            }
+            $dte['Encabezado']['Totales']['TpoMoneda'] = $_POST['TpoMoneda'];
         }
         // agregar detalle a los datos
         $n_detalles = count($_POST['NmbItem']);
@@ -601,6 +639,7 @@ class Controller_Documentos extends \Controller_App
                 'Emisor' => $Emisor,
                 'resumen' => $Dte->getResumen(),
                 'DteTmp' => $DteTmp,
+                'Dte' => $Dte,
             ]);
         }
     }
@@ -609,7 +648,7 @@ class Controller_Documentos extends \Controller_App
      * Función de la API que permite emitir un DTE a partir de un documento
      * temporal, asignando folio, firmando y enviando al SII
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-07-13
+     * @version 2016-07-15
      */
     public function _api_generar_POST()
     {
@@ -684,21 +723,26 @@ class Controller_Documentos extends \Controller_App
         $DteEmitido->receptor = substr($DteEmitido->receptor, 0, -2);
         $DteEmitido->xml = base64_encode($xml);
         $DteEmitido->usuario = $User->id;
+        if (in_array($DteEmitido->dte, [110, 111, 112])) {
+            $DteEmitido->total = $DteEmitido->exento = $DteTmp->total;
+        }
         $DteEmitido->save();
         // guardar referencias si existen
         $datos = json_decode($DteTmp->datos, true);
         if (!empty($datos['Referencia'])) {
             foreach ($datos['Referencia'] as $referencia) {
-                $DteReferencia = new Model_DteReferencia();
-                $DteReferencia->emisor = $DteEmitido->emisor;
-                $DteReferencia->dte = $DteEmitido->dte;
-                $DteReferencia->folio = $DteEmitido->folio;
-                $DteReferencia->certificacion = $DteEmitido->certificacion;
-                $DteReferencia->referencia_dte = $referencia['TpoDocRef'];
-                $DteReferencia->referencia_folio = $referencia['FolioRef'];
-                $DteReferencia->codigo = !empty($referencia['CodRef']) ? $referencia['CodRef'] : null;
-                $DteReferencia->razon = !empty($referencia['RazonRef']) ? $referencia['RazonRef'] : null;
-                $DteReferencia->save();
+                if ($referencia['TpoDocRef']<800) {
+                    $DteReferencia = new Model_DteReferencia();
+                    $DteReferencia->emisor = $DteEmitido->emisor;
+                    $DteReferencia->dte = $DteEmitido->dte;
+                    $DteReferencia->folio = $DteEmitido->folio;
+                    $DteReferencia->certificacion = $DteEmitido->certificacion;
+                    $DteReferencia->referencia_dte = $referencia['TpoDocRef'];
+                    $DteReferencia->referencia_folio = $referencia['FolioRef'];
+                    $DteReferencia->codigo = !empty($referencia['CodRef']) ? $referencia['CodRef'] : null;
+                    $DteReferencia->razon = !empty($referencia['RazonRef']) ? $referencia['RazonRef'] : null;
+                    $DteReferencia->save();
+                }
             }
         }
         // guardar pagos programados si existen
@@ -875,7 +919,7 @@ class Controller_Documentos extends \Controller_App
     /**
      * Recurso de la API que genera el PDF de los DTEs contenidos en un EnvioDTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-21
+     * @version 2016-07-15
      */
     public function _api_generar_pdf_POST()
     {
@@ -900,6 +944,9 @@ class Controller_Documentos extends \Controller_App
         $papelContinuo = !empty($this->Api->data['papelContinuo']) ? $this->Api->data['papelContinuo'] : false;
         // crear opción para web de verificación
         $webVerificacion = !empty($this->Api->data['webVerificacion']) ? $this->Api->data['webVerificacion'] : false;
+        // copias
+        $copias_tributarias = isset($this->Api->data['copias_tributarias']) ? (int)$this->Api->data['copias_tributarias'] : 1;
+        $copias_cedibles = isset($this->Api->data['copias_cedibles']) ? (int)$this->Api->data['copias_cedibles'] : 1;
         // sin límite de tiempo para generar documentos
         set_time_limit(0);
         // Cargar EnvioDTE y extraer arreglo con datos de carátula y DTEs
@@ -940,10 +987,12 @@ class Controller_Documentos extends \Controller_App
                 $pdf->setWebVerificacion($webVerificacion);
             // si no tiene cedible o el cedible va en el mismo archivo
             if ($cedible!=2) {
-                $pdf->agregar($DTE->getDatos(), $DTE->getTED());
+                for ($i=0; $i<$copias_tributarias; $i++)
+                    $pdf->agregar($DTE->getDatos(), $DTE->getTED());
                 if ($cedible and $DTE->esCedible()) {
                     $pdf->setCedible(true);
-                    $pdf->agregar($DTE->getDatos(), $DTE->getTED());
+                    for ($i=0; $i<$copias_cedibles; $i++)
+                        $pdf->agregar($DTE->getDatos(), $DTE->getTED());
                 }
                 $file = $dir.'/dte_'.$Caratula['RutEmisor'].'_'.$DTE->getID().'.pdf';
                 $pdf->Output($file, 'F');

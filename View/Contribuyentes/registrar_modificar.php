@@ -445,7 +445,7 @@ echo $f->input([
     'type' => 'select',
     'name' => 'config_pdf_dte_papel',
     'label' => 'Papel PDF',
-    'options' => ['Hoja carta', 75=>'Papel contínuo 75mm', 80=>'Papel contínuo 80mm'],
+    'options' => \sasco\LibreDTE\Sii\PDF\Dte::$papel,
     'value' => isset($Contribuyente) ? $Contribuyente->config_pdf_dte_papel : 0,
     'help' => 'Permite indicar si se usará hoja carta en las versiones en PDF del DTE o bien papel contínuo',
 ]);
@@ -456,6 +456,18 @@ echo $f->input([
     'options' => ['No', 'Si'],
     'value' => isset($Contribuyente) ? $Contribuyente->config_pdf_dte_cedible : 0,
     'help' => '¿Se debe incluir la copia cedible por defecto en los PDF?',
+]);
+echo $f->input([
+    'name' => 'config_pdf_copias_tributarias',
+    'label' => 'Copias tributarias',
+    'value' => isset($Contribuyente) ? $Contribuyente->config_pdf_copias_tributarias : 1,
+    'help' => '¿Copias tributarias que saldrán por defecto en la pestaña PDF?',
+]);
+echo $f->input([
+    'name' => 'config_pdf_copias_cedibles',
+    'label' => 'Copias cedibles',
+    'value' => isset($Contribuyente) ? $Contribuyente->config_pdf_copias_cedibles : 1,
+    'help' => '¿Copias cedibles que saldrán por defecto en la pestaña PDF?',
 ]);
 ?>
         </div>

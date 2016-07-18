@@ -2,7 +2,7 @@
 <?php
 foreach (['MntExe', 'MntNeto', 'MntIVA', 'MntTotal'] as $m) {
     if ($resumen[$m]) {
-        $resumen[$m] = num($resumen[$m]);
+        $resumen[$m] = num($resumen[$m], $Dte->esExportacion() ? 2 : 0);
     }
 }
 $resumen['TpoDoc'] = $DteTmp->getDte()->tipo;

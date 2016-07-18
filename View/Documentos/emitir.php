@@ -28,7 +28,7 @@ echo $f->begin(['id'=>'emitir_dte', 'focus'=>'RUTRecepField', 'action'=>$_base.'
         <div class="form-group col-md-3">
 <?php if (!isset($DteReceptor)) : ?>
             <div class="input-group">
-                <div class="input-group-addon"><a href="#" title="Buscar RUT del receptor [B]" data-toggle="modal" data-target=".modal-buscar-receptor" accesskey="B">buscar</a></div>
+                <div class="input-group-addon"><a href="#" title="Buscar RUT del receptor [B]" data-toggle="modal" data-target=".modal-buscar-receptor" accesskey="B" id="modalBuscar">buscar</a></div>
                 <input type="text" name="RUTRecep" id="RUTRecepField" class="check notempty rut form-control" placeholder="RUT del receptor" maxlength="12" onblur="Receptor.setDatos('emitir_dte')" />
             </div>
 <?php else: ?>
@@ -57,6 +57,19 @@ echo $f->begin(['id'=>'emitir_dte', 'focus'=>'RUTRecepField', 'action'=>$_base.'
                     $f->input(['name'=>'Patente', 'attr'=>'maxlength="6" style="width:6em"']),
                     $f->input(['name'=>'RUTChofer', 'check'=>'rut', 'attr'=>'style="width:8em"']),
                     $f->input(['name'=>'NombreChofer', 'attr'=>'maxlength="30" style="width:8em"']),
+                ]
+            ]); ?>
+        </div>
+    </div>
+    <!-- DATOS DE EXPORTACIÖN -->
+    <div class="row" id="datosExportacion" style="display:none">
+        <div class="form-group col-md-12">
+            <?php new \sowerphp\general\View_Helper_Table([
+                ['Moneda', 'Nacionalidad', 'Tipo servicio'],
+                [
+                    $f->input(['type'=>'select', 'name'=>'TpoMoneda', 'options'=>$monedas]),
+                    $f->input(['type'=>'select', 'name'=>'Nacionalidad', 'options'=>[''=>''] + $nacionalidades, 'check'=>'notempty']),
+                    $f->input(['type'=>'select', 'name'=>'IndServicio', 'options'=>[''=>''] + $IndServicio, 'value'=>$Emisor->config_extra_indicador_servicio]),
                 ]
             ]); ?>
         </div>
@@ -150,9 +163,9 @@ new \sowerphp\general\View_Helper_Table($impuestos);
     'label'=>'Referencias',
     'titles'=>['Fecha DTE ref.', 'DTE referenciado', 'Folio DTE ref.', 'Código ref.', 'Razón referencia'],
     'inputs'=>[
-        ['name'=>'FchRef', 'type'=>'date', 'check'=>'notempty date'],
+        ['name'=>'FchRef', 'type'=>'date', 'check'=>'notempty date', 'value'=>date('Y-m-d')],
         ['name'=>'TpoDocRef', 'type'=>'select', 'options'=>[''=>'Tipo de documento referenciado'] + $tipos_dte_referencia, 'attr'=>'onblur="DTE.setFechaReferencia('.$Emisor->rut.', this)"', 'check'=>'notempty'],
-        ['name'=>'FolioRef', 'check'=>'notempty integer', 'attr'=>'maxlength="18" onblur="DTE.setFechaReferencia('.$Emisor->rut.', this)"'],
+        ['name'=>'FolioRef', 'check'=>'notempty', 'attr'=>'maxlength="18" onblur="DTE.setFechaReferencia('.$Emisor->rut.', this)"'],
         ['name'=>'CodRef', 'type'=>'select', 'options'=>[''=>''] + $tipos_referencia],
         ['name'=>'RazonRef', 'attr'=>'maxlength="90"'],
     ],
