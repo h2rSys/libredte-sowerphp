@@ -338,8 +338,10 @@ if ($DteEmitido->getDte()->esExportacion()) :
         'help' => 'Monto en pesos (CLP) equivalente a 1 '.$DteEmitido->getDte()->getMoneda(),
     ]);
     echo $f->end('Modificar el tipo de cambio');
-endif;
 ?>
+    </div>
+</div>
+<?php endif; ?>
 </div>
 <!-- FIN AVANZADO -->
 
