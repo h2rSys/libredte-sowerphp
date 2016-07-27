@@ -1649,7 +1649,7 @@ class Model_Contribuyente extends \Model_App
      * @param datos_email Arreglo con los índices: fecha_hora_email, asunto, de, mensaje, mensaje_html
      * @param file Arreglo con los índices: name, data, size y type
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-29
+     * @version 2016-07-27
      */
     private function actualizarBandejaIntercambio_procesar_EnvioDTE($receptor, array $datos_email, array $file)
     {
@@ -1659,6 +1659,8 @@ class Model_Contribuyente extends \Model_App
             return null;
         $caratula = $EnvioDte->getCaratula();
         if (((int)(bool)!$caratula['NroResol'])!=$this->config_ambiente_en_certificacion)
+            return false;
+        if (substr($caratula['RutReceptor'], 0, -2) != $receptor)
             return false;
         if (!isset($caratula['SubTotDTE'][0]))
             $caratula['SubTotDTE'] = [$caratula['SubTotDTE']];
