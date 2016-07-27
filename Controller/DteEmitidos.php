@@ -642,6 +642,70 @@ class Controller_DteEmitidos extends \Controller_App
     }
 
     /**
+     * Acción de la API que permite obtener el PDF de un DTE emitido
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-07-27
+     */
+    public function _api_pdf_GET($dte, $folio, $emisor)
+    {
+        if ($this->Auth->User) {
+            $User = $this->Auth->User;
+        } else {
+            $User = $this->Api->getAuthUser();
+            if (is_string($User)) {
+                $this->Api->send($User, 401);
+            }
+        }
+        $Emisor = new Model_Contribuyente($emisor);
+        if (!$Emisor->exists()) {
+                $this->Api->send('Emisor no existe', 404);
+        }
+        if (!$Emisor->usuarioAutorizado($User, '/dte/dte_emitidos/xml')) {
+            $this->Api->send('No está autorizado a operar con la empresa solicitada', 403);
+        }
+        $DteEmitido = new Model_DteEmitido($Emisor->rut, $dte, $folio, (int)$Emisor->config_ambiente_en_certificacion);
+        if (!$DteEmitido->exists()) {
+            $this->Api->send('No existe el documento solicitado T.'.$dte.'F'.$folio, 404);
+        }
+        // datos por defecto
+        extract($this->Api->getQuery([
+            'cedible' => $Emisor->config_pdf_dte_cedible,
+            'papelContinuo' => $Emisor->config_pdf_dte_papel,
+            'compress' => false,
+            'copias_tributarias' => 1,
+            'copias_cedibles' => $Emisor->config_pdf_dte_cedible,
+        ]));
+        // armar datos con archivo XML y flag para indicar si es cedible o no
+        $webVerificacion = $this->request->url.'/boletas';
+        $data = [
+            'xml' => $DteEmitido->xml,
+            'cedible' => $cedible,
+            'papelContinuo' => $papelContinuo,
+            'compress' => $compress,
+            'webVerificacion' => in_array($DteEmitido->dte, [39,41]) ? $webVerificacion : false,
+            'copias_tributarias' => $copias_tributarias,
+            'copias_cedibles' => $copias_cedibles,
+        ];
+        // realizar consulta a la API
+        $rest = new \sowerphp\core\Network_Http_Rest();
+        $rest->setAuth($User->hash);
+        $response = $rest->post($this->request->url.'/api/dte/documentos/generar_pdf', $data);
+        if ($response===false) {
+            $this->Api->send(implode('<br/>', $rest->getErrors(), 500));
+        }
+        if ($response['status']['code']!=200) {
+            $this->Api->send($response['body'], $response['status']['code']);
+        }
+        // si dió código 200 se entrega la respuesta del servicio web
+        foreach (['Content-Disposition', 'Content-Length', 'Content-Type'] as $header) {
+            if (isset($response['header'][$header]))
+                header($header.': '.$response['header'][$header]);
+        }
+        echo $response['body'];
+        exit;
+    }
+
+    /**
      * Acción de la API que permite obtener el XML de un DTE emitido
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
      * @version 2016-07-02
