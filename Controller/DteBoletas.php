@@ -48,7 +48,7 @@ class Controller_DteBoletas extends \Controller_App
     /**
      * Acción para descargar libro de boletas en XML
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-02-14
+     * @version 2016-07-28
      */
     public function xml($periodo, $FolioNotificacion = 1)
     {
@@ -60,7 +60,7 @@ class Controller_DteBoletas extends \Controller_App
             $Libro->agregar([
                 'TpoDoc' => $boleta['dte'],
                 'FolioDoc' => $boleta['folio'],
-                'Anulado' => $boleta['anulada'] ? 'A' : false,
+                //'Anulado' => $boleta['anulada'] ? 'A' : false,
                 'FchEmiDoc' => $boleta['fecha'],
                 'RUTCliente' => $boleta['rut'],
                 'MntExe' => $boleta['exento'] ? $boleta['exento'] : false,
