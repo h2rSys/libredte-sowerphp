@@ -84,26 +84,65 @@ class Controller_DteTmps extends \Controller_App
     /**
      * Método que genera la previsualización del PDF del DTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-03-10
+     * @version 2016-07-28
      */
     public function pdf($receptor, $dte, $codigo)
     {
         $Emisor = $this->getContribuyente();
+        // realizar consulta a la API
+        $rest = new \sowerphp\core\Network_Http_Rest();
+        $rest->setAuth($this->Auth->User->hash);
+        $response = $rest->get($this->request->url.'/api/dte/dte_tmps/pdf/'.$receptor.'/'.$dte.'/'.$codigo.'/'.$Emisor->rut);
+        if ($response===false) {
+            \sowerphp\core\Model_Datasource_Session::message(implode('<br/>', $rest->getErrors()), 'error');
+            $this->redirect('/dte/dte_tmps');
+        }
+        if ($response['status']['code']!=200) {
+            \sowerphp\core\Model_Datasource_Session::message($response['body'], 'error');
+            $this->redirect('/dte/dte_tmps');
+        }
+        // si dió código 200 se entrega la respuesta del servicio web
+        foreach (['Content-Disposition', 'Content-Length', 'Content-Type'] as $header) {
+            if (isset($response['header'][$header]))
+                header($header.': '.$response['header'][$header]);
+        }
+        echo $response['body'];
+        exit;
+    }
+
+    /**
+     * Recurso de la API que genera la previsualización del PDF del DTE
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-07-28
+     */
+    public function _api_pdf_GET($receptor, $dte, $codigo, $emisor)
+    {
+        if ($this->Auth->User) {
+            $User = $this->Auth->User;
+        } else {
+            $User = $this->Api->getAuthUser();
+            if (is_string($User)) {
+                $this->Api->send($User, 401);
+            }
+        }
+        $Emisor = new Model_Contribuyente($emisor);
+        if (!$Emisor->exists()) {
+                $this->Api->send('Emisor no existe', 404);
+        }
+        if (!$Emisor->usuarioAutorizado($User, '/dte/dte_emitidos/xml')) {
+            $this->Api->send('No está autorizado a operar con la empresa solicitada', 403);
+        }
         // obtener datos JSON del DTE
         $DteTmp = new Model_DteTmp($Emisor->rut, $receptor, $dte, $codigo);
         if (!$DteTmp->exists()) {
-            \sowerphp\core\Model_Datasource_Session::message(
-                'No existe el DTE temporal solicitado', 'error'
-            );
-            $this->redirect('/dte/dte_tmps');
+            $this->Api->send('No existe el DTE temporal solicitado', 404);
         }
         // armar xml a partir de datos del dte temporal
         $xml = $DteTmp->getEnvioDte()->generar();
         if (!$xml) {
-            \sowerphp\core\Model_Datasource_Session::message(
-                'No fue posible crear el PDF para previsualización:<br/>'.implode('<br/>', \sasco\LibreDTE\Log::readAll()), 'error'
+            $this->Api->send(
+                'No fue posible crear el PDF para previsualización:<br/>'.implode('<br/>', \sasco\LibreDTE\Log::readAll()), 507
             );
-            $this->redirect('/dte/dte_tmps');
         }
         // armar datos con archivo XML y flag para indicar si es cedible o no
         $data = [
@@ -119,7 +158,7 @@ class Controller_DteTmps extends \Controller_App
         }
         // realizar consulta a la API
         $rest = new \sowerphp\core\Network_Http_Rest();
-        $rest->setAuth($this->Auth->User ? $this->Auth->User->hash : $this->token);
+        $rest->setAuth($User->hash);
         $response = $rest->post($this->request->url.'/api/dte/documentos/generar_pdf', $data);
         if ($response['status']['code']!=200) {
             \sowerphp\core\Model_Datasource_Session::message($response['body'], 'error');
