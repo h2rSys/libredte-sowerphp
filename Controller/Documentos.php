@@ -731,6 +731,8 @@ class Controller_Documentos extends \Controller_App
         // guardar referencias si existen
         $datos = json_decode($DteTmp->datos, true);
         if (!empty($datos['Referencia'])) {
+            if (!isset($datos['Referencia'][0]))
+                $datos['Referencia'] = [$datos['Referencia']];
             foreach ($datos['Referencia'] as $referencia) {
                 if ($referencia['TpoDocRef']<800) {
                     $DteReferencia = new Model_DteReferencia();
