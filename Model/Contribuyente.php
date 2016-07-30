@@ -758,7 +758,7 @@ class Model_Contribuyente extends \Model_App
     /**
      * Método que entrega el listado de documentos emitidos por el contribuyente
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-07-13
+     * @version 2016-07-30
      */
     public function getDocumentosEmitidos($filtros = [])
     {
@@ -807,9 +807,26 @@ class Model_Contribuyente extends \Model_App
                 $where[] = 'd.sucursal_sii IS NULL';
             }
         }
+        // forma de obtener razón social
+        $razon_social_xpath = 'BTRIM(XPATH(\'/n:EnvioDTE/n:SetDTE/n:DTE/n:Exportaciones/n:Encabezado/n:Receptor/n:RznSocRecep\', CONVERT_FROM(decode(d.xml, \'base64\'), \'ISO8859-1\')::XML, \'{{n,http://www.sii.cl/SiiDte}}\')::TEXT, \'{"}\')';
+        $razon_social =
+            $this->db->config['type']=='PostgreSQL'
+            ? 'CASE WHEN d.dte NOT IN (110, 111, 112) THEN r.razon_social ELSE '.$razon_social_xpath.' END AS razon_social'
+            : 'r.razon_social'
+        ;
         // armar consulta
         $query = '
-            SELECT d.dte, t.tipo, d.folio, r.razon_social, d.fecha, d.total, d.revision_estado AS estado, i.glosa AS intercambio, d.sucursal_sii, u.usuario
+            SELECT
+                d.dte,
+                t.tipo,
+                d.folio,
+                '.$razon_social.',
+                d.fecha,
+                d.total,
+                d.revision_estado AS estado,
+                i.glosa AS intercambio,
+                d.sucursal_sii,
+                u.usuario
             FROM
                 dte_emitido AS d LEFT JOIN dte_intercambio_resultado_dte AS i
                     ON i.emisor = d.emisor AND i.dte = d.dte AND i.folio = d.folio AND i.certificacion = d.certificacion,

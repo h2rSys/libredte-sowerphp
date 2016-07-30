@@ -260,6 +260,7 @@ class Model_DteEmitido extends Model_Base_Envio
 
     private $Dte; ///< Objeto con el DTE
     private $datos; ///< Arreglo con los datos del XML del DTE
+    private $Receptor = null; /// caché para el receptor
 
     /**
      * Constructor clase DTE emitido
@@ -301,6 +302,26 @@ class Model_DteEmitido extends Model_Base_Envio
             $this->Dte = $EnvioDte->getDocumentos()[0];
         }
         return $this->Dte;
+    }
+
+    /**
+     * Método que entrega el objeto del receptor del DTE
+     * @return \website\Dte\Model_Contribuyente
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-07-29
+     */
+    public function getReceptor()
+    {
+        if ($this->Receptor === null) {
+            $this->Receptor = (new Model_Contribuyentes())->get($this->receptor);
+            if (in_array($this->dte, [110, 111, 112])) {
+                $datos = $this->getDte()->getDatos()['Encabezado']['Receptor'];
+                $this->Receptor->razon_social = $datos['RznSocRecep'];
+                $this->Receptor->direccion = $datos['DirRecep'];
+                $this->Receptor->comuna = null;
+            }
+        }
+        return $this->Receptor;
     }
 
     /**
