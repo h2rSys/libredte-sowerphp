@@ -18,11 +18,13 @@ $(function() {
 
 <div role="tabpanel">
     <ul class="nav nav-tabs" role="tablist">
-        <li role="presentation" class="active"><a href="#datos" aria-controls="datos" role="tab" data-toggle="tab">Datos empresa</a></li>
-        <li role="presentation"><a href="#ambientes" aria-controls="ambientes" role="tab" data-toggle="tab">Ambientes: producción y certificación</a></li>
-        <li role="presentation"><a href="#emails" aria-controls="emails" role="tab" data-toggle="tab">Emails</a></li>
-        <li role="presentation"><a href="#config" aria-controls="config" role="tab" data-toggle="tab">Configuración aplicación</a></li>
+        <li role="presentation" class="active"><a href="#datos" aria-controls="datos" role="tab" data-toggle="tab">Empresa</a></li>
+        <li role="presentation"><a href="#ambientes" aria-controls="ambientes" role="tab" data-toggle="tab">Ambientes</a></li>
+        <li role="presentation"><a href="#correos" aria-controls="correos" role="tab" data-toggle="tab">Correos</a></li>
+        <li role="presentation"><a href="#facturacion" aria-controls="facturacion" role="tab" data-toggle="tab">Facturación</a></li>
+        <li role="presentation"><a href="#contabilidad" aria-controls="contabilidad" role="tab" data-toggle="tab">Contabilidad</a></li>
         <li role="presentation"><a href="#api" aria-controls="api" role="tab" data-toggle="tab">API</a></li>
+        <li role="presentation"><a href="#general" aria-controls="general" role="tab" data-toggle="tab">General</a></li>
     </ul>
     <div class="tab-content">
 
@@ -232,16 +234,21 @@ echo $f->input([
 <!-- FIN AMBIENTES -->
 
 <!-- INICIO EMAILS -->
-<div role="tabpanel" class="tab-pane" id="emails">
+<div role="tabpanel" class="tab-pane" id="correos">
     <p>Aquí debe configurar las dos casillas de correo para operar con facturación electrónica. Puede revisar la <a href="http://wiki.libredte.cl/doku.php/faq/libredte/sowerphp/config/email">documentación de las casillas de correo</a> para obtener detalles de qué opciones debe usar.</p>
     <div class="row">
         <div class="col-md-6">
-            <h2>Email contacto SII</h2>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-envelope"></i>
+                    Correo contacto SII
+                </div>
+                <div class="panel-body">
 <?php
 $f->setColsLabel(3);
 echo $f->input([
     'name' => 'config_email_sii_user',
-    'label' => 'Email',
+    'label' => 'Correo',
     'check' => 'email',
     'value' => isset($Contribuyente) ? $Contribuyente->config_email_sii_user : null,
     'attr' => 'maxlength="50" onblur="config_email_set(this, \'sii\')"',
@@ -270,13 +277,20 @@ echo $f->input([
     'check' => 'notempty',
 ]);
 ?>
+                </div>
+            </div>
         </div>
         <div class="col-md-6">
-            <h2>Email intercambio</h2>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-envelope-o"></i>
+                    Correo contacto empresas (intercambio)
+                </div>
+                <div class="panel-body">
 <?php
 echo $f->input([
     'name' => 'config_email_intercambio_user',
-    'label' => 'Email',
+    'label' => 'Correo',
     'check' => 'email',
     'value' => isset($Contribuyente) ? $Contribuyente->config_email_intercambio_user : null,
     'attr' => 'maxlength="50" onblur="config_email_set(this, \'intercambio\')"',
@@ -306,17 +320,19 @@ echo $f->input([
 ]);
 $f->setColsLabel();
 ?>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 <!-- FIN EMAILS -->
 
-<!-- INICIO CONFIGURACIÓN APLICACIÓN -->
-<div role="tabpanel" class="tab-pane" id="config">
+<!-- INICIO CONFIGURACIÓN FACTURACIÓN -->
+<div role="tabpanel" class="tab-pane" id="facturacion">
     <div class="panel panel-default">
         <div class="panel-heading">
             <i class="fa fa-send-o"></i>
-            Configuración emisión DTE
+            Emisión DTE
         </div>
         <div class="panel-body">
 <?php
@@ -398,7 +414,6 @@ if (!empty($tipos_dte)) {
         'options' => $tipos_dte,
         'value' => isset($Contribuyente) ? $Contribuyente->config_emision_dte_defecto : 33,
         'help' => '¿Qué documento debe estar seleccionado por defecto al emitir?',
-        'check' => 'notempty',
     ]);
     $config_emision_observaciones = [];
     if (isset($Contribuyente) and $Contribuyente->config_emision_observaciones) {
@@ -437,7 +452,7 @@ if (!empty($tipos_dte)) {
     <div class="panel panel-default">
         <div class="panel-heading">
             <i class="fa fa-file-pdf-o"></i>
-            Configuración PDF
+            PDF
         </div>
         <div class="panel-body">
 <?php
@@ -462,29 +477,14 @@ echo $f->input([
     'label' => 'Copias tributarias',
     'value' => isset($Contribuyente) ? $Contribuyente->config_pdf_copias_tributarias : 1,
     'help' => '¿Copias tributarias que saldrán por defecto en la pestaña PDF?',
+    'check' => 'notempty integer',
 ]);
 echo $f->input([
     'name' => 'config_pdf_copias_cedibles',
     'label' => 'Copias cedibles',
     'value' => isset($Contribuyente) ? $Contribuyente->config_pdf_copias_cedibles : 1,
     'help' => '¿Copias cedibles que saldrán por defecto en la pestaña PDF?',
-]);
-?>
-        </div>
-    </div>
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <i class="fa fa-dollar"></i>
-            Configuración contable
-        </div>
-        <div class="panel-body">
-<?php
-echo $f->input([
-    'name' => 'config_contabilidad_ppm',
-    'label' => 'Porcentaje PPM',
-    'value' => isset($Contribuyente) ? (float)$Contribuyente->config_contabilidad_ppm : 0,
-    'help' => 'Porcentaje que se pagará mensualmente como PPM obligatorio',
-    'check' => 'notempty real',
+    'check' => 'notempty integer',
 ]);
 ?>
         </div>
@@ -492,7 +492,7 @@ echo $f->input([
     <div class="panel panel-default">
         <div class="panel-heading">
             <i class="fa fa-eye"></i>
-            Configuración SII
+            SII
         </div>
         <div class="panel-body">
 <?php
@@ -507,30 +507,40 @@ echo $f->input([
 ?>
         </div>
     </div>
+</div>
+<!-- FIN CONFIGURACIÓN FACTURACIÓN -->
+
+<!-- INICIO CONTABILIDAD -->
+<div role="tabpanel" class="tab-pane" id="contabilidad">
     <div class="panel panel-default">
         <div class="panel-heading">
-            <i class="fa fa-cogs"></i>
-            Configuración general
+            <i class="fa fa-dollar"></i>
+            Formulario 29
         </div>
         <div class="panel-body">
 <?php
 echo $f->input([
-    'type' => 'select',
-    'name' => 'config_app_soporte',
-    'label' => 'Permitir soporte',
-    'options' => ['No', 'Si'],
-    'value' => isset($Contribuyente) ? $Contribuyente->config_app_soporte : 0,
-    'help' => 'Se permite al equipo de soporte de LibreDTE trabajar con el contribuyente',
+    'name' => 'config_contabilidad_ppm',
+    'label' => 'Porcentaje PPM',
+    'value' => isset($Contribuyente) ? (float)$Contribuyente->config_contabilidad_ppm : 0,
+    'help' => 'Porcentaje que se pagará mensualmente como PPM obligatorio',
+    'check' => 'notempty real',
 ]);
 ?>
         </div>
     </div>
 </div>
-<!-- FIN CONFIGURACIÓN APLICACIÓN -->
+<!-- FIN CONTABILIDAD -->
 
 <!-- INICIO API -->
 <div role="tabpanel" class="tab-pane" id="api">
-<p>LibreDTE puede comunicarse con la aplicación web de su empresa a través de servicios web. A continuación puede ingresar las URL para diferentes consultas que LibreDTE debería poder hacer a su aplicación. Puede revisar la <a href="http://wiki.libredte.cl/doku.php/sowerphp/integracion">documentación de la integración</a> para obtener detalles de las salidas esperadas para cada consulta.</p>
+    <p>LibreDTE puede comunicarse con la aplicación web de su empresa a través de servicios web. A continuación puede ingresar las URL para diferentes consultas que LibreDTE debería poder hacer a su aplicación. Puede revisar la <a href="http://wiki.libredte.cl/doku.php/sowerphp/integracion">documentación de la integración</a> para obtener detalles de las salidas esperadas para cada consulta.</p>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <i class="fa fa-key"></i>
+            Autenticación
+        </div>
+        <div class="panel-body">
 <?php
 echo $f->input([
     'name' => 'config_api_auth_user',
@@ -546,6 +556,16 @@ echo $f->input([
     'help' => 'Si no se especifíca la contraseña se enviará al servicio web el usuario/token y una X como contraseña',
     'attr' => 'maxlength="255"',
 ]);
+?>
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <i class="fa fa-list-alt"></i>
+            Recursos
+        </div>
+        <div class="panel-body">
+<?php
 echo $f->input([
     'name' => 'config_api_url_items',
     'label' => 'Items',
@@ -554,8 +574,33 @@ echo $f->input([
     'attr' => 'maxlength="255"',
 ]);
 ?>
+        </div>
+    </div>
 </div>
 <!-- FIN API -->
+
+<!-- INICIO CONFIGURACIÓN GENERAL -->
+<div role="tabpanel" class="tab-pane" id="general">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <i class="fa fa-cogs"></i>
+            Soporte
+        </div>
+        <div class="panel-body">
+<?php
+echo $f->input([
+    'type' => 'select',
+    'name' => 'config_app_soporte',
+    'label' => 'Permitir soporte',
+    'options' => ['No', 'Si'],
+    'value' => isset($Contribuyente) ? $Contribuyente->config_app_soporte : 0,
+    'help' => 'Se permite al equipo de soporte de LibreDTE trabajar con el contribuyente',
+]);
+?>
+        </div>
+    </div>
+</div>
+<!-- FIN CONFIGURACIÓN GENERAL -->
 
     </div>
 </div>
