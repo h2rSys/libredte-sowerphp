@@ -239,6 +239,7 @@ class Controller_Documentos extends \Controller_App
         // corregir dirección sucursal si se indicó
         if (!empty($dte['Encabezado']['Emisor']['CdgSIISucur'])) {
             $sucursal = $Emisor->getSucursal($dte['Encabezado']['Emisor']['CdgSIISucur']);
+            $dte['Encabezado']['Emisor']['Sucursal'] = $sucursal->sucursal;
             $dte['Encabezado']['Emisor']['DirOrigen'] = $sucursal->direccion;
             $dte['Encabezado']['Emisor']['CmnaOrigen'] = (new \sowerphp\app\Sistema\General\DivisionGeopolitica\Model_Comunas())->get($sucursal->comuna)->comuna;
         }

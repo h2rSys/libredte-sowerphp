@@ -126,6 +126,7 @@ echo $f->input([
         [
             'name' => 'config_extra_sucursales_sucursal',
             'check' => 'notempty',
+            'attr' => 'maxlength="20"',
         ],
         [
             'name' => 'config_extra_sucursales_direccion',
