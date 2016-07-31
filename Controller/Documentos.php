@@ -169,7 +169,7 @@ class Controller_Documentos extends \Controller_App
      * enviado al SII. Luego se debe usar la función generar de la API para
      * generar el DTE final y enviarlo al SII.
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-07-15
+     * @version 2016-07-31
      */
     public function _api_emitir_POST()
     {
@@ -252,9 +252,14 @@ class Controller_Documentos extends \Controller_App
         }
         // crear objeto Dte y documento temporal
         $Dte = new \sasco\LibreDTE\Sii\Dte($dte, isset($_GET['normalizar'])?(bool)$_GET['normalizar']:true);
+        $datos_dte = $Dte->getDatos();
+        $datos_json = json_encode($datos_dte);
+        if ($datos_dte === false or $datos_json === false) {
+            $this->Api->send('No fue posible recuperar los datos del DTE para guardarlos como JSON en el DTE temporal. '.implode('. ', \sasco\LibreDTE\Log::readAll()), 507);
+        }
         $resumen = $Dte->getResumen();
         $DteTmp = new Model_DteTmp();
-        $DteTmp->datos = json_encode($Dte->getDatos());
+        $DteTmp->datos = $datos_json;
         $DteTmp->emisor = $Emisor->rut;
         $DteTmp->receptor = $Receptor->rut;
         $DteTmp->dte = $resumen['TpoDoc'];
