@@ -265,7 +265,17 @@ class Controller_Documentos extends \Controller_App
         $DteTmp->dte = $resumen['TpoDoc'];
         $DteTmp->codigo = md5($DteTmp->datos);
         $DteTmp->fecha = $resumen['FchDoc'];
-        $DteTmp->total = !$Dte->esExportacion() ? $resumen['MntTotal'] : -1; // TODO: calcular monto en pesos
+        if (!$Dte->esExportacion()) {
+            $DteTmp->total = $resumen['MntTotal'];
+        } else {
+            $cambio = false;
+            if (!empty($dte['Encabezado']['Totales']['TpoMoneda'])) {
+                $moneda = $dte['Encabezado']['Totales']['TpoMoneda'];
+                $fecha = $resumen['FchDoc'];
+                $cambio = (new \sowerphp\app\Sistema\General\Model_MonedaCambio($moneda, 'CLP', $fecha))->valor;
+            }
+            $DteTmp->total = $cambio ? round($resumen['MntTotal'] * $cambio) : -1;
+        }
         try {
             if ($DteTmp->save()) {
                 return [
