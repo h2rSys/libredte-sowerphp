@@ -352,7 +352,7 @@ class Controller_Documentos extends \Controller_App
     /**
      * Acción para generar y mostrar previsualización de emisión de DTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-07-15
+     * @version 2016-08-31
      */
     public function previsualizacion()
     {
@@ -617,6 +617,7 @@ class Controller_Documentos extends \Controller_App
             for ($i=0; $i<$n_referencias; $i++) {
                 $dte['Referencia'][] = [
                     'TpoDocRef' => $_POST['TpoDocRef'][$i],
+                    'IndGlobal' => is_numeric($_POST['FolioRef'][$i]) and $_POST['FolioRef'][$i] == 0 ? 1 : false,
                     'FolioRef' => $_POST['FolioRef'][$i],
                     'FchRef' => $_POST['FchRef'][$i],
                     'CodRef' => !empty($_POST['CodRef'][$i]) ? $_POST['CodRef'][$i] : false,
