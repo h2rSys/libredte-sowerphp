@@ -130,7 +130,12 @@ if ($emails) {
     $mensaje = $Receptor->razon_social.','."\n\n";
     $mensaje .= 'Se adjunta '.$DteEmitido->getTipo()->tipo.' N° '.$DteEmitido->folio.' del día '.\sowerphp\general\Utility_Date::format($DteEmitido->fecha).' por un monto total de $'.num($DteEmitido->total).'.-'."\n\n";
     $mensaje .= 'Saluda atentamente,'."\n\n";
-    $mensaje .= '-- '."\n".$Emisor->razon_social."\n";
+    $mensaje .= '-- '."\n";
+    if ($Emisor->config_extra_nombre_fantasia) {
+        $mensaje .= $Emisor->config_extra_nombre_fantasia.' ('.$Emisor->razon_social.')'."\n";
+    } else {
+        $mensaje .= $Emisor->razon_social."\n";
+    }
     $mensaje .= $Emisor->giro."\n";
     $contacto = [];
     if (!empty($Emisor->telefono))

@@ -47,6 +47,12 @@ echo $f->input([
     'attr' => 'maxlength="100"',
 ]);
 echo $f->input([
+    'name' => 'config_extra_nombre_fantasia',
+    'label' => 'Nombre fantasía',
+    'value' => isset($Contribuyente) ? $Contribuyente->config_extra_nombre_fantasia : null,
+    'attr' => 'maxlength="100"',
+]);
+echo $f->input([
     'type' => 'select',
     'name' => 'actividad_economica',
     'label' => 'Actividad principal',
