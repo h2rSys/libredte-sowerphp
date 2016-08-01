@@ -1043,15 +1043,21 @@ class Model_Contribuyente extends \Model_App
     /**
      * Método que entrega el resumen de las ventas de un período
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-03-08
+     * @version 2016-08-01
      */
     public function getVentas($periodo)
     {
         $periodo_col = $this->db->config['type']=='PostgreSQL' ? 'TO_CHAR(e.fecha, \'YYYYmm\')' : 'DATE_FORMAT(e.fecha, "%Y%m")';
+        $razon_social_xpath = 'BTRIM(XPATH(\'/n:EnvioDTE/n:SetDTE/n:DTE/n:Exportaciones/n:Encabezado/n:Receptor/n:RznSocRecep\', CONVERT_FROM(decode(e.xml, \'base64\'), \'ISO8859-1\')::XML, \'{{n,http://www.sii.cl/SiiDte}}\')::TEXT, \'{"}\')';
+        $razon_social =
+            $this->db->config['type']=='PostgreSQL'
+            ? 'CASE WHEN e.dte NOT IN (110, 111, 112) THEN r.razon_social ELSE '.$razon_social_xpath.' END AS razon_social'
+            : 'r.razon_social'
+        ;
         // si el contribuyente no tiene impuestos adicionales se entregan los datos de la tabla de emitidos
         if (!$this->config_extra_impuestos_adicionales) {
             return $this->db->getTable('
-                SELECT e.dte, e.folio, e.tasa, e.fecha, e.sucursal_sii, '.$this->db->concat('r.rut', '-', 'r.dv').' AS rut, r.razon_social, e.exento, e.neto, e.iva, \'\' AS impuesto_codigo, \'\' AS impuesto_tasa, \'\' AS impuesto_monto, e.total
+                SELECT e.dte, e.folio, e.tasa, e.fecha, e.sucursal_sii, '.$this->db->concat('r.rut', '-', 'r.dv').' AS rut, '.$razon_social.', e.exento, e.neto, e.iva, \'\' AS impuesto_codigo, \'\' AS impuesto_tasa, \'\' AS impuesto_monto, e.total
                 FROM dte_tipo AS t, dte_emitido AS e, contribuyente AS r
                 WHERE t.codigo = e.dte AND t.venta = true AND e.receptor = r.rut AND e.emisor = :rut AND e.certificacion = :certificacion AND '.$periodo_col.' = :periodo  AND e.dte != 46
                 ORDER BY e.fecha, e.dte, e.folio
@@ -1076,7 +1082,7 @@ class Model_Contribuyente extends \Model_App
                     e.fecha,
                     e.sucursal_sii,
                     '.$this->db->concat('r.rut', '-', 'r.dv').' AS rut,
-                    r.razon_social,
+                    '.$razon_social.',
                     e.exento,
                     e.neto,
                     e.iva,
