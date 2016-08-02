@@ -533,6 +533,14 @@ echo $f->input([
     'help' => 'Porcentaje que se pagará mensualmente como PPM obligatorio',
     'check' => 'notempty real',
 ]);
+echo $f->input([
+    'type' => 'select',
+    'name' => 'config_contabilidad_f29_151',
+    'label' => 'Cuenta código 151',
+    'options' => [''=>'Cuenta sin definir'] + $cuentas,
+    'value' => isset($Contribuyente) ? $Contribuyente->config_contabilidad_f29_151 : false,
+    'help' => 'Cuenta contable de la retención de impuesto del 10% sobre rentas',
+]);
 ?>
         </div>
     </div>

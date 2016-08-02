@@ -37,7 +37,7 @@ class Model_F29
     /**
      * Constructor del modelo F29
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-10
+     * @version 2016-08-02
      */
     public function __construct(\website\Dte\Model_Contribuyente $Emisor, $periodo)
     {
@@ -52,6 +52,7 @@ class Model_F29
             '15' => substr($periodo, 4).'/'.substr($periodo, 0, 4),
             '55' => $this->Emisor->email,
             '115' => $this->Emisor->config_contabilidad_ppm / 100,
+            '151' => (new \website\Lce\Model_LceCuenta($this->Emisor->rut, $this->Emisor->config_contabilidad_f29_151))->getHaber($this->periodo),
             '313' => $this->Emisor->config_extra_contador_rut,
             '314' => $this->Emisor->config_extra_representante_rut,
         ];
