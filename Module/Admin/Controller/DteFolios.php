@@ -246,4 +246,33 @@ class Controller_DteFolios extends \Controller_App
         }
     }
 
+    /**
+     * Recurso que entrega el la información de cierto mantenedor de folios
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-08-02
+     */
+    public function _api_info_GET($dte, $emisor)
+    {
+        if ($this->Auth->User) {
+            $User = $this->Auth->User;
+        } else {
+            $User = $this->Api->getAuthUser();
+            if (is_string($User)) {
+                $this->Api->send($User, 401);
+            }
+        }
+        $Emisor = new \website\Dte\Model_Contribuyente($emisor);
+        if (!$Emisor->exists()) {
+            $this->Api->send('Emisor no existe', 404);
+        }
+        if (!$Emisor->usuarioAutorizado($User, '/dte/dte_emitidos/ver')) {
+            $this->Api->send('No está autorizado a operar con la empresa solicitada', 403);
+        }
+        $DteFolio = new Model_DteFolio($Emisor->rut, $dte, (int)$Emisor->config_ambiente_en_certificacion);
+        if (!$DteFolio->exists()) {
+            $this->Api->send('No existe el mantenedor de folios para el tipo de DTE '.$dte, 404);
+        }
+        return $DteFolio;
+    }
+
 }
