@@ -58,7 +58,7 @@ echo $f->input([
     'type' => 'select',
     'name' => 'moneda',
     'label' => 'Moneda',
-    'options' => ['CLP'=>'Pesos', 'CLF'=>'UF'],
+    'options' => ['CLP'=>'Pesos', 'CLF'=>'UF', 'USD'=>'Dólares', 'EUR'=>'Euros'],
     'value' => isset($Obj)?$Obj->moneda:'CLP',
     'check' => 'notempty',
 ]);
