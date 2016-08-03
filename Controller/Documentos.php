@@ -352,7 +352,7 @@ class Controller_Documentos extends \Controller_App
     /**
      * Acción para generar y mostrar previsualización de emisión de DTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-08-31
+     * @version 2016-08-03
      */
     public function previsualizacion()
     {
@@ -459,17 +459,19 @@ class Controller_Documentos extends \Controller_App
         ];
         // agregar pagos programados si es venta a crédito
         if ($_POST['FmaPago']==2) {
-            $dte['Encabezado']['IdDoc']['MntPagos'] = [];
             // si no hay pagos explícitos se copia la fecha de vencimiento y el
             // monto total se determinará en el proceso de normalización
             if (empty($_POST['FchPago'])) {
-                $dte['Encabezado']['IdDoc']['MntPagos'][] = [
-                    'FchPago' => $_POST['FchVenc'],
-                    'GlosaPagos' => 'Fecha de pago igual al vencimiento',
-                ];
+                if ($_POST['FchVenc']>$_POST['FchEmis']) {
+                    $dte['Encabezado']['IdDoc']['MntPagos'] = [
+                        'FchPago' => $_POST['FchVenc'],
+                        'GlosaPagos' => 'Fecha de pago igual al vencimiento',
+                    ];
+                }
             }
             // hay montos a pagar programados de forma explícita
             else {
+                $dte['Encabezado']['IdDoc']['MntPagos'] = [];
                 $n_pagos = count($_POST['FchPago']);
                 for ($i=0; $i<$n_pagos; $i++) {
                     $dte['Encabezado']['IdDoc']['MntPagos'][] = [
