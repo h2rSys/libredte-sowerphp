@@ -16,7 +16,7 @@ echo $f->input([
     'label' => 'Código',
     'value' => isset($Obj)?$Obj->codigo:'',
     'check' => 'notempty',
-    'attr' => isset($Obj)?'disabled="disabled"':'maxlength="35"',
+    'attr' => isset($Obj)?'disabled="disabled"':'maxlength="35" onblur="this.value=this.value.replace(\'/\', \'_\')"',
     'help' => $Contribuyente->config_extra_agente_retenedor?$help:false,
 ]);
 echo $f->input([
