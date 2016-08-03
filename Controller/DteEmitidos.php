@@ -98,35 +98,22 @@ class Controller_DteEmitidos extends \Controller_App
     /**
      * Acción que permite eliminar un DTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-03-19
+     * @version 2016-08-03
      */
     public function eliminar($dte, $folio)
     {
         $Emisor = $this->getContribuyente();
-        // obtener DTE emitido
-        $DteEmitido = new Model_DteEmitido($Emisor->rut, $dte, $folio, (int)$Emisor->config_ambiente_en_certificacion);
-        if (!$DteEmitido->exists()) {
-            \sowerphp\core\Model_Datasource_Session::message(
-                'No existe el DTE solicitado', 'error'
-            );
-            $this->redirect('/dte/dte_emitidos/listar');
+        $rest = new \sowerphp\core\Network_Http_Rest();
+        $rest->setAuth($this->Auth->User->hash);
+        $response = $rest->get($this->request->url.'/api/dte/dte_emitidos/eliminar/'.$dte.'/'.$folio.'/'.$Emisor->rut);
+        if ($response===false) {
+            \sowerphp\core\Model_Datasource_Session::message(implode('<br/>', $rest->getErrors()), 'error');
         }
-        // si el DTE no está rechazado no se puede eliminar
-        if ($DteEmitido->track_id and $DteEmitido->getEstado()!='R') {
-            \sowerphp\core\Model_Datasource_Session::message(
-                'No es posible eliminar el DTE ya que no está rechazado', 'error'
-            );
-            $this->redirect('/dte/dte_emitidos/ver/'.$dte.'/'.$folio);
+        else if ($response['status']['code']!=200) {
+            \sowerphp\core\Model_Datasource_Session::message($response['body'], 'error');
         }
-        // eliminar DTE
-        if (!$DteEmitido->delete()) {
-            \sowerphp\core\Model_Datasource_Session::message(
-                'No fue posible eliminar el DTE', 'error'
-            );
-        } else {
-            \sowerphp\core\Model_Datasource_Session::message(
-                'DTE eliminado', 'ok'
-            );
+        else {
+            \sowerphp\core\Model_Datasource_Session::message('Se eliminó el DTE', 'ok');
         }
         $this->redirect('/dte/dte_emitidos/listar');
     }
@@ -658,7 +645,7 @@ class Controller_DteEmitidos extends \Controller_App
         }
         $Emisor = new Model_Contribuyente($emisor);
         if (!$Emisor->exists()) {
-                $this->Api->send('Emisor no existe', 404);
+            $this->Api->send('Emisor no existe', 404);
         }
         if (!$Emisor->usuarioAutorizado($User, '/dte/dte_emitidos/xml')) {
             $this->Api->send('No está autorizado a operar con la empresa solicitada', 403);
@@ -722,7 +709,7 @@ class Controller_DteEmitidos extends \Controller_App
         }
         $Emisor = new Model_Contribuyente($emisor);
         if (!$Emisor->exists()) {
-                $this->Api->send('Emisor no existe', 404);
+            $this->Api->send('Emisor no existe', 404);
         }
         if (!$Emisor->usuarioAutorizado($User, '/dte/dte_emitidos/xml')) {
             $this->Api->send('No está autorizado a operar con la empresa solicitada', 403);
@@ -752,7 +739,7 @@ class Controller_DteEmitidos extends \Controller_App
         }
         $Emisor = new Model_Contribuyente($emisor);
         if (!$Emisor->exists()) {
-                $this->Api->send('Emisor no existe', 404);
+            $this->Api->send('Emisor no existe', 404);
         }
         if (!$Emisor->usuarioAutorizado($User, '/dte/dte_emitidos/ver')) {
             $this->Api->send('No está autorizado a operar con la empresa solicitada', 403);
@@ -790,7 +777,7 @@ class Controller_DteEmitidos extends \Controller_App
         }
         $Emisor = new Model_Contribuyente($emisor);
         if (!$Emisor->exists()) {
-                $this->Api->send('Emisor no existe', 404);
+            $this->Api->send('Emisor no existe', 404);
         }
         if (!$Emisor->usuarioAutorizado($User, '/dte/dte_emitidos/xml')) {
             $this->Api->send('No está autorizado a operar con la empresa solicitada', 403);
@@ -826,7 +813,7 @@ class Controller_DteEmitidos extends \Controller_App
         }
         $Emisor = new Model_Contribuyente($emisor);
         if (!$Emisor->exists()) {
-                $this->Api->send('Emisor no existe', 404);
+            $this->Api->send('Emisor no existe', 404);
         }
         if (!$Emisor->usuarioAutorizado($User, '/dte/dte_emitidos/actualizar_estado')) {
             $this->Api->send('No está autorizado a operar con la empresa solicitada', 403);
@@ -867,7 +854,7 @@ class Controller_DteEmitidos extends \Controller_App
         }
         $Emisor = new Model_Contribuyente($emisor);
         if (!$Emisor->exists()) {
-                $this->Api->send('Emisor no existe', 404);
+            $this->Api->send('Emisor no existe', 404);
         }
         if (!$Emisor->usuarioAutorizado($User, '/dte/dte_emitidos/actualizar_estado')) {
             $this->Api->send('No está autorizado a operar con la empresa solicitada', 403);
@@ -887,6 +874,45 @@ class Controller_DteEmitidos extends \Controller_App
         } catch (\Exception $e) {
             $this->Api->send($e->getMessage(), 502);
         }
+    }
+
+    /**
+     * Recurso de la API que permite eliminar un DTE rechazado o no enviado al
+     * SII
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-08-03
+     */
+    public function _api_eliminar_GET($dte, $folio, $emisor)
+    {
+        // verificar permisos y crear DteEmitido
+        if ($this->Auth->User) {
+            $User = $this->Auth->User;
+        } else {
+            $User = $this->Api->getAuthUser();
+            if (is_string($User)) {
+                $this->Api->send($User, 401);
+            }
+        }
+        $Emisor = new Model_Contribuyente($emisor);
+        if (!$Emisor->exists()) {
+            $this->Api->send('Emisor no existe', 404);
+        }
+        if (!$Emisor->usuarioAutorizado($User, '/dte/dte_emitidos/actualizar_estado')) {
+            $this->Api->send('No está autorizado a operar con la empresa solicitada', 403);
+        }
+        $DteEmitido = new Model_DteEmitido($Emisor->rut, (int)$dte, (int)$folio, (int)$Emisor->config_ambiente_en_certificacion);
+        if (!$DteEmitido->exists()) {
+            $this->Api->send('No existe el documento solicitado T'.$dte.'F'.$folio, 404);
+        }
+        // si el DTE no está rechazado no se puede eliminar
+        if ($DteEmitido->track_id and $DteEmitido->getEstado()!='R') {
+            $this->Api->send('No es posible eliminar el DTE ya que no está rechazado', 400);
+        }
+        // eliminar DTE
+        if (!$DteEmitido->delete()) {
+            $this->Api->send('No fue posible eliminar el DTE', 500);
+        }
+        return true;
     }
 
     /**
