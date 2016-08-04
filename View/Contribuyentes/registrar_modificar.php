@@ -532,23 +532,24 @@ echo $f->input([
 <?php
 echo $f->input([
     'type' => 'select',
+    'name' => 'config_pdf_logo_posicion',
+    'label' => 'Posición logo',
+    'options' => ['Izquierda', 'Arriba'],
+    'value' => isset($Contribuyente) ? $Contribuyente->config_pdf_logo_posicion : 0,
+    'help' => '¿El logo va a la izquierda o arriba de los datos del contribuyente?',
+]);
+?>
+                </div>
+                <div class="col-md-6">
+<?php
+echo $f->input([
+    'type' => 'select',
     'name' => 'config_pdf_detalle_fuente',
     'label' => 'Fuente detalle',
     'options' => [11=>11, 10=>10, 9=>9, 8=>8],
     'value' => (isset($Contribuyente) and $Contribuyente->config_pdf_detalle_fuente)? $Contribuyente->config_pdf_detalle_fuente : 10,
     'help' => 'Tamaño de la fuente a utilizar en el detalle del PDF ',
 ]);
-?>
-                </div>
-                <div class="col-md-6">
-<?php
-/*echo $f->input([
-    'name' => 'config_pdf_copias_cedibles',
-    'label' => 'Copias cedibles',
-    'value' => isset($Contribuyente) ? $Contribuyente->config_pdf_copias_cedibles : 1,
-    'help' => '¿Copias cedibles que saldrán por defecto en la pestaña PDF?',
-    'check' => 'notempty integer',
-]);*/
 ?>
                 </div>
             </div>
