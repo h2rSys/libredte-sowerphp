@@ -342,15 +342,20 @@ $f->setColsLabel();
             Emisión DTE
         </div>
         <div class="panel-body">
+            <div class="row">
+                <div class="col-md-6">
 <?php
-echo $f->input([
-    'type' => 'select',
-    'name' => 'config_sii_envio_automatico',
-    'label' => 'Envío automático',
-    'options' => ['No', 'Si'],
-    'value' => isset($Contribuyente) ? $Contribuyente->config_sii_envio_automatico : 0,
-    'help' => '¿Se deben enviar automáticamente los DTE al SII sin pasar por previsualización?',
-]);
+$f->setColsLabel(4);
+if (!empty($tipos_dte)) {
+    echo $f->input([
+        'type' => 'select',
+        'name' => 'config_emision_dte_defecto',
+        'label' => 'DTE defecto',
+        'options' => $tipos_dte,
+        'value' => isset($Contribuyente) ? $Contribuyente->config_emision_dte_defecto : 33,
+        'help' => '¿Qué documento debe estar seleccionado por defecto al emitir?',
+    ]);
+}
 echo $f->input([
     'type' => 'select',
     'name' => 'config_extra_exenta',
@@ -367,6 +372,10 @@ echo $f->input([
     'value' => isset($Contribuyente) ? $Contribuyente->config_extra_indicador_servicio : 0,
     'help' => '¿Se debe usar un indicador de servicio por defecto?',
 ]);
+?>
+                </div>
+                <div class="col-md-6">
+<?php
 /*echo $f->input([
     'type' => 'select',
     'name' => 'config_extra_constructora',
@@ -383,6 +392,19 @@ echo $f->input([
     'value' => isset($Contribuyente) ? $Contribuyente->config_extra_agente_retenedor : 0,
     'help' => '¿El contribuyente actúa como agente retenedor de algún producto?',
 ]);
+echo $f->input([
+    'type' => 'select',
+    'name' => 'config_sii_envio_automatico',
+    'label' => 'Envío automático',
+    'options' => ['No', 'Si'],
+    'value' => isset($Contribuyente) ? $Contribuyente->config_sii_envio_automatico : 0,
+    'help' => '¿Se deben enviar automáticamente los DTE al SII sin pasar por previsualización?',
+]);
+?>
+                </div>
+            </div>
+<?php
+$f->setColsLabel();
 $config_extra_impuestos_adicionales = [];
 if (isset($Contribuyente) and $Contribuyente->config_extra_impuestos_adicionales) {
     foreach ($Contribuyente->config_extra_impuestos_adicionales as $impuesto) {
@@ -414,14 +436,6 @@ echo $f->input([
     'help' => 'Indique los impuestos adicionales o retenciones que desea utilizar en la emisión de documentos',
 ]);
 if (!empty($tipos_dte)) {
-    echo $f->input([
-        'type' => 'select',
-        'name' => 'config_emision_dte_defecto',
-        'label' => 'DTE defecto',
-        'options' => $tipos_dte,
-        'value' => isset($Contribuyente) ? $Contribuyente->config_emision_dte_defecto : 33,
-        'help' => '¿Qué documento debe estar seleccionado por defecto al emitir?',
-    ]);
     $config_emision_observaciones = [];
     if (isset($Contribuyente) and $Contribuyente->config_emision_observaciones) {
         foreach ($Contribuyente->config_emision_observaciones as $dte => $glosa) {
@@ -462,15 +476,22 @@ if (!empty($tipos_dte)) {
             PDF
         </div>
         <div class="panel-body">
+            <div class="row">
+                <div class="col-md-6">
 <?php
+$f->setColsLabel(4);
 echo $f->input([
     'type' => 'select',
     'name' => 'config_pdf_dte_papel',
-    'label' => 'Papel PDF',
+    'label' => 'Formato',
     'options' => \sasco\LibreDTE\Sii\PDF\Dte::$papel,
     'value' => isset($Contribuyente) ? $Contribuyente->config_pdf_dte_papel : 0,
     'help' => 'Permite indicar si se usará hoja carta en las versiones en PDF del DTE o bien papel contínuo',
 ]);
+?>
+                </div>
+                <div class="col-md-6">
+<?php
 echo $f->input([
     'type' => 'select',
     'name' => 'config_pdf_dte_cedible',
@@ -479,6 +500,12 @@ echo $f->input([
     'value' => isset($Contribuyente) ? $Contribuyente->config_pdf_dte_cedible : 0,
     'help' => '¿Se debe incluir la copia cedible por defecto en los PDF?',
 ]);
+?>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+<?php
 echo $f->input([
     'name' => 'config_pdf_copias_tributarias',
     'label' => 'Copias tributarias',
@@ -486,6 +513,10 @@ echo $f->input([
     'help' => '¿Copias tributarias que saldrán por defecto en la pestaña PDF?',
     'check' => 'notempty integer',
 ]);
+?>
+                </div>
+                <div class="col-md-6">
+<?php
 echo $f->input([
     'name' => 'config_pdf_copias_cedibles',
     'label' => 'Copias cedibles',
@@ -494,6 +525,85 @@ echo $f->input([
     'check' => 'notempty integer',
 ]);
 ?>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+<?php
+echo $f->input([
+    'type' => 'select',
+    'name' => 'config_pdf_detalle_fuente',
+    'label' => 'Fuente detalle',
+    'options' => [11=>11, 10=>10, 9=>9, 8=>8],
+    'value' => (isset($Contribuyente) and $Contribuyente->config_pdf_detalle_fuente)? $Contribuyente->config_pdf_detalle_fuente : 10,
+    'help' => 'Tamaño de la fuente a utilizar en el detalle del PDF ',
+]);
+?>
+                </div>
+                <div class="col-md-6">
+<?php
+/*echo $f->input([
+    'name' => 'config_pdf_copias_cedibles',
+    'label' => 'Copias cedibles',
+    'value' => isset($Contribuyente) ? $Contribuyente->config_pdf_copias_cedibles : 1,
+    'help' => '¿Copias cedibles que saldrán por defecto en la pestaña PDF?',
+    'check' => 'notempty integer',
+]);*/
+?>
+                </div>
+            </div>
+<?php
+$f->setColsLabel();
+$f->setStyle(false);
+?>
+            <div class="form-group required">
+                <label class="col-sm-2 control-label">Ancho columnas</label>
+                <div class="col-sm-10">
+                <?php new \sowerphp\general\View_Helper_Table([
+                    ['Código', 'Cantidad', 'Precio', 'Descuento', 'Recargo', 'Subtotal'],
+                    [
+                        $f->input([
+                            'name'=>'config_pdf_detalle_ancho_CdgItem',
+                            'placeholder' => 20,
+                            'value'=>((isset($Contribuyente) and $Contribuyente->config_pdf_detalle_ancho)? $Contribuyente->config_pdf_detalle_ancho->CdgItem : 20),
+                            'check'=>'notempty integer',
+                        ]),
+                        $f->input([
+                            'name'=>'config_pdf_detalle_ancho_QtyItem',
+                            'placeholder' => 15,
+                            'value'=>((isset($Contribuyente) and $Contribuyente->config_pdf_detalle_ancho)? $Contribuyente->config_pdf_detalle_ancho->QtyItem : 15),
+                            'check'=>'notempty integer',
+                        ]),
+                        $f->input([
+                            'name'=>'config_pdf_detalle_ancho_PrcItem',
+                            'placeholder' => 22,
+                            'value'=>((isset($Contribuyente) and $Contribuyente->config_pdf_detalle_ancho)? $Contribuyente->config_pdf_detalle_ancho->PrcItem : 22),
+                            'check'=>'notempty integer',
+                        ]),
+                        $f->input([
+                            'name'=>'config_pdf_detalle_ancho_DescuentoMonto',
+                            'placeholder' => 22,
+                            'value'=>((isset($Contribuyente) and $Contribuyente->config_pdf_detalle_ancho)? $Contribuyente->config_pdf_detalle_ancho->DescuentoMonto : 22),
+                            'check'=>'notempty integer',
+                        ]),
+                        $f->input([
+                            'name'=>'config_pdf_detalle_ancho_RecargoMonto',
+                            'placeholder' => 22,
+                            'value'=>((isset($Contribuyente) and $Contribuyente->config_pdf_detalle_ancho)? $Contribuyente->config_pdf_detalle_ancho->RecargoMonto : 22),
+                            'check'=>'notempty integer',
+                        ]),
+                        $f->input([
+                            'name'=>'config_pdf_detalle_ancho_MontoItem',
+                            'placeholder' => 22,
+                            'value'=>((isset($Contribuyente) and $Contribuyente->config_pdf_detalle_ancho)? $Contribuyente->config_pdf_detalle_ancho->MontoItem : 22),
+                            'check'=>'notempty integer',
+                        ]),
+                    ]
+                ]); ?>
+                <p class="help-block">Ancho de las columnas del detalle del PDF en hoja carta</p>
+                </div>
+            </div>
+<?php $f->setStyle('horizontal'); ?>
         </div>
     </div>
     <div class="panel panel-default">

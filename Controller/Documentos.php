@@ -940,7 +940,7 @@ class Controller_Documentos extends \Controller_App
     /**
      * Recurso de la API que genera el PDF de los DTEs contenidos en un EnvioDTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-07-15
+     * @version 2016-08-03
      */
     public function _api_generar_pdf_POST()
     {
@@ -988,6 +988,13 @@ class Controller_Documentos extends \Controller_App
                 $logo = file_get_contents($logo_file);
             }
         }
+        // configuración especifica del formato del PDF si es hoja carta, no se
+        // recibe como parámetro con tal de forzar que los PDF salgan como el
+        // emisor de LibreDTE los tiene configurados (así funciona tanto para
+        // el emisor, como para los receptores u otras generaciones de PDF)
+        if (!$papelContinuo) {
+            $Emisor = new Model_Contribuyente($Caratula['RutEmisor']);
+        }
         // directorio temporal para guardar los PDF
         $dir = sys_get_temp_dir().'/dte_'.$Caratula['RutEmisor'].'_'.$Caratula['RutReceptor'].'_'.str_replace(['-', ':', 'T'], '', $Caratula['TmstFirmaEnv']);
         if (is_dir($dir))
@@ -1006,6 +1013,14 @@ class Controller_Documentos extends \Controller_App
             $pdf->setResolucion(['FchResol'=>$Caratula['FchResol'], 'NroResol'=>$Caratula['NroResol']]);
             if ($webVerificacion)
                 $pdf->setWebVerificacion($webVerificacion);
+            if (!$papelContinuo) {
+                if ($Emisor->config_pdf_detalle_fuente) {
+                    $pdf->setFuenteDetalle($Emisor->config_pdf_detalle_fuente);
+                }
+                if ($Emisor->config_pdf_detalle_ancho) {
+                    $pdf->setAnchoColumnasDetalle((array)$Emisor->config_pdf_detalle_ancho);
+                }
+            }
             // si no tiene cedible o el cedible va en el mismo archivo
             if ($cedible!=2) {
                 for ($i=0; $i<$copias_tributarias; $i++)

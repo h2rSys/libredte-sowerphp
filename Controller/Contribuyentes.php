@@ -253,7 +253,7 @@ class Controller_Contribuyentes extends \Controller_App
      * Método que prepara los datos de configuraciones del contribuyente para
      * ser guardados
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-07-12
+     * @version 2016-08-03
      */
     private function prepararDatosContribuyente(&$Contribuyente)
     {
@@ -310,6 +310,17 @@ class Controller_Contribuyentes extends \Controller_App
             unset($_POST['config_emision_observaciones_glosa']);
         } else {
             $_POST['config_emision_observaciones'] = null;
+        }
+        // crear arreglo con anchos de columnas del detalle del PDF
+        $config_pdf_detalle_ancho = [];
+        foreach ($_POST as $key => $val) {
+            if (substr($key, 0, 25)=='config_pdf_detalle_ancho_') {
+                $config_pdf_detalle_ancho[substr($key, 25)] = $val;
+                unset($_POST[$key]);
+            }
+        }
+        if ($config_pdf_detalle_ancho) {
+            $_POST['config_pdf_detalle_ancho'] = $config_pdf_detalle_ancho;
         }
         // poner valores por defecto
         foreach (Model_Contribuyente::$defaultConfig as $key => $value) {
