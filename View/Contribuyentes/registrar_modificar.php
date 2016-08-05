@@ -553,6 +553,20 @@ echo $f->input([
 ?>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-md-6">
+<?php
+echo $f->input([
+    'type' => 'select',
+    'name' => 'config_pdf_item_detalle_posicion',
+    'label' => 'Posición detalle',
+    'options' => ['Abajo', 'Derecha'],
+    'value' => isset($Contribuyente) ? $Contribuyente->config_pdf_item_detalle_posicion : 0,
+    'help' => '¿El detalle del item va a abajo o a la derecha del nombre del item?',
+]);
+?>
+                </div>
+            </div>
 <?php
 $f->setColsLabel();
 $f->setStyle(false);

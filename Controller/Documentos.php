@@ -940,7 +940,7 @@ class Controller_Documentos extends \Controller_App
     /**
      * Recurso de la API que genera el PDF de los DTEs contenidos en un EnvioDTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-08-04
+     * @version 2016-08-05
      */
     public function _api_generar_pdf_POST()
     {
@@ -1015,6 +1015,7 @@ class Controller_Documentos extends \Controller_App
             if ($webVerificacion)
                 $pdf->setWebVerificacion($webVerificacion);
             if (!$papelContinuo) {
+                $pdf->setPosicionDetalleItem($Emisor->config_pdf_item_detalle_posicion);
                 if ($Emisor->config_pdf_detalle_fuente) {
                     $pdf->setFuenteDetalle($Emisor->config_pdf_detalle_fuente);
                 }
