@@ -195,6 +195,12 @@ class Model_Contribuyente extends \Model_App
         'extra_otras_actividades' => [],
     ]; ///< valores por defecto para columnas de la configuración en caso que no estén especificadas
 
+    private static $reservados = [
+        55555555,
+        66666666,
+        88888888,
+    ]; ///< RUTs que están reservados y no serán modificados al guardar el contribuyente
+
     public $contribuyente; ///< Copia de razon_social
     private $config = null; ///< Caché para configuraciones
 
@@ -331,11 +337,16 @@ class Model_Contribuyente extends \Model_App
      * Método que guarda los datos del contribuyente, incluyendo su
      * configuración y parámetros adicionales
      * @param registrado Se usa para indicar que el contribuyente que se esta guardando es uno registrado por un usuario (se validan otros datos)
+     * @param no_modificar =true Evita que se modifiquen ciertos contribuyentes reservados
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-13
+     * @version 2016-08-05
      */
-    public function save($registrado = false)
+    public function save($registrado = false, $no_modificar = true)
     {
+        // si no se debe guardar se entrega true (se hace creer que se guardó)
+        if ($no_modificar and in_array($this->rut, self::$reservados)) {
+            return true;
+        }
         // si es contribuyente registrado se hacen algunas verificaciones
         if ($registrado) {
             // verificar campos mínimos
