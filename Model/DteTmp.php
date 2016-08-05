@@ -137,6 +137,8 @@ class Model_DteTmp extends \Model_App
         'Model_DteTipo' => 'website\Dte'
     ); ///< Namespaces que utiliza esta clase
 
+    private $Receptor; ///< Caché para el receptor
+
     /**
      * Método que genera el XML de EnvioDTE a partir de los datos ya
      * normalizados de un DTE temporal
@@ -171,11 +173,20 @@ class Model_DteTmp extends \Model_App
     /**
      * Método que entrega el objeto de receptor
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2015-09-22
+     * @version 2016-08-05
      */
     public function getReceptor()
     {
-        return (new Model_Contribuyentes())->get($this->receptor);
+        if ($this->Receptor === null) {
+            $this->Receptor = (new Model_Contribuyentes())->get($this->receptor);
+            if (in_array($this->dte, [110, 111, 112])) {
+                $datos = json_decode($this->datos, true)['Encabezado']['Receptor'];
+                $this->Receptor->razon_social = $datos['RznSocRecep'];
+                $this->Receptor->direccion = $datos['DirRecep'];
+                $this->Receptor->comuna = null;
+            }
+        }
+        return $this->Receptor;
     }
 
     /**
