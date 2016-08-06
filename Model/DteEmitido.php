@@ -515,11 +515,10 @@ class Model_DteEmitido extends Model_Base_Envio
      * Método que envía el DTE emitido al SII, básicamente lo saca del sobre y
      * lo pone en uno nuevo con el RUT del SII
      * @param user ID del usuari oque hace el envío
-     * @param timbrar Si se desea volver a timbrar antes de enviar (sólo aplica si se puede reenviar)
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-13
+     * @version 2016-08-05
      */
-    public function enviar($user = null, $timbrar = false)
+    public function enviar($user = null)
     {
         $Emisor = $this->getEmisor();
         // boletas no se envían
@@ -542,28 +541,9 @@ class Model_DteEmitido extends Model_Base_Envio
         if (!$Firma) {
             throw new \Exception('No hay firma electrónica asociada a la empresa (o bien no se pudo cargar)');
         }
-        // preparar datos que se usarán
-        $datos = $this->getDatos();
-        unset($datos['TmstFirma']);
-        if ($timbrar) {
-            unset($datos['TED']);
-            // corregir datos
-            $datos['Encabezado']['Receptor']['RUTRecep'] = strtoupper($datos['Encabezado']['Receptor']['RUTRecep']);
-            $datos['Encabezado']['Receptor']['DirRecep'] = substr($datos['Encabezado']['Receptor']['DirRecep'], 0, 70);
-        }
-        // crear XML EnvioDte
-        $Dte = new \sasco\LibreDTE\Sii\Dte($datos, false);
-        if ($timbrar) {
-            $Caf = $Emisor->getCaf($Dte->getTipo(), $Dte->getFolio());
-            if (!$Caf or !$Dte->timbrar($Caf)) {
-                throw new \Exception('No fue posible timbrar el DTE que se quiere enviar al SII');
-            }
-        }
-        if (!$Dte->firmar($Firma)) {
-            throw new \Exception('No fue posible firmar el DTE que se quiere enviar al SII');
-        }
+        // generar nuevo sobre
         $EnvioDte = new \sasco\LibreDTE\Sii\EnvioDte();
-        $EnvioDte->agregar($Dte);
+        $EnvioDte->agregar($this->getDte());
         $EnvioDte->setFirma($Firma);
         $EnvioDte->setCaratula([
             'RutEnvia' => $Firma ? $Firma->getID() : false,
@@ -571,7 +551,13 @@ class Model_DteEmitido extends Model_Base_Envio
             'FchResol' => $this->certificacion ? $Emisor->config_ambiente_certificacion_fecha : $Emisor->config_ambiente_produccion_fecha,
             'NroResol' => $this->certificacion ? 0 : $Emisor->config_ambiente_produccion_numero,
         ]);
+        // generar XML del sobre y "parchar" el DTE
         $xml = $EnvioDte->generar();
+        $xml = str_replace(
+            ['<DTE xmlns="http://www.sii.cl/SiiDte" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"', '<SignedInfo>'],
+            ['<DTE', '<SignedInfo xmlns="http://www.w3.org/2000/09/xmldsig#">'],
+            $xml
+        );
         // obtener token
         \sasco\LibreDTE\Sii::setAmbiente((int)$this->certificacion);
         $token = \sasco\LibreDTE\Sii\Autenticacion::getToken($Firma);

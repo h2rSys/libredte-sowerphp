@@ -153,16 +153,15 @@ class Controller_DteEmitidos extends \Controller_App
      * aceptados con reparos (flag generar no tendrá efecto si no se cumple esto)
      * @param dte Tipo de DTE
      * @param folio Folio del DTE
-     * @param timbrar =true se volverá a timbrar el DTE, por defecto =false (solo tiene efecto si el DTE se puede reenviar)
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-07-18
+     * @version 2016-08-05
      */
-    public function enviar_sii($dte, $folio, $timbrar = false)
+    public function enviar_sii($dte, $folio)
     {
         $Emisor = $this->getContribuyente();
         $rest = new \sowerphp\core\Network_Http_Rest();
         $rest->setAuth($this->Auth->User->hash);
-        $response = $rest->get($this->request->url.'/api/dte/dte_emitidos/enviar_sii/'.$dte.'/'.$folio.'/'.$Emisor->rut.'?timbrar='.(int)$timbrar);
+        $response = $rest->get($this->request->url.'/api/dte/dte_emitidos/enviar_sii/'.$dte.'/'.$folio.'/'.$Emisor->rut);
         if ($response===false) {
             \sowerphp\core\Model_Datasource_Session::message(implode('<br/>', $rest->getErrors()), 'error');
         }
@@ -836,13 +835,11 @@ class Controller_DteEmitidos extends \Controller_App
      * aceptados con reparos (flag generar no tendrá efecto si no se cumple esto)
      * @param dte Tipo de DTE
      * @param folio Folio del DTE
-     * @param timbrar =true se volverá a timbrar el DTE, por defecto =false (solo tiene efecto si el DTE se puede reenviar)
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-07-18
+     * @version 2016-08-05
      */
     public function _api_enviar_sii_GET($dte, $folio, $emisor)
     {
-        extract($this->Api->getQuery(['timbrar'=>true]));
         // verificar permisos y crear DteEmitido
         if ($this->Auth->User) {
             $User = $this->Auth->User;
@@ -869,7 +866,7 @@ class Controller_DteEmitidos extends \Controller_App
         }
         // enviar DTE (si no se puede enviar se generará excepción)
         try {
-            $DteEmitido->enviar($User->id, $timbrar);
+            $DteEmitido->enviar($User->id);
             return $DteEmitido;
         } catch (\Exception $e) {
             $this->Api->send($e->getMessage(), 502);
