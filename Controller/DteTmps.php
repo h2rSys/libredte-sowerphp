@@ -84,9 +84,9 @@ class Controller_DteTmps extends \Controller_App
     /**
      * Método que genera la previsualización del PDF del DTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-07-28
+     * @version 2016-08-08
      */
-    public function pdf($receptor, $dte, $codigo)
+    public function pdf($receptor, $dte, $codigo, $disposition = 'attachment')
     {
         $Emisor = $this->getContribuyente();
         // realizar consulta a la API
@@ -102,10 +102,11 @@ class Controller_DteTmps extends \Controller_App
             $this->redirect('/dte/dte_tmps');
         }
         // si dió código 200 se entrega la respuesta del servicio web
-        foreach (['Content-Disposition', 'Content-Length', 'Content-Type'] as $header) {
+        foreach (['Content-Length', 'Content-Type'] as $header) {
             if (isset($response['header'][$header]))
                 header($header.': '.$response['header'][$header]);
         }
+        header('Content-Disposition: '.($disposition=='inline'?'inline':$response['header']['Content-Disposition']));
         echo $response['body'];
         exit;
     }

@@ -400,6 +400,14 @@ echo $f->input([
     'value' => isset($Contribuyente) ? $Contribuyente->config_sii_envio_automatico : 0,
     'help' => '¿Se deben enviar automáticamente los DTE al SII sin pasar por previsualización?',
 ]);
+echo $f->input([
+    'type' => 'select',
+    'name' => 'config_emision_previsualizacion_automatica',
+    'label' => 'Previsualización PDF',
+    'options' => ['No', 'Si'],
+    'value' => isset($Contribuyente) ? $Contribuyente->config_emision_previsualizacion_automatica : 0,
+    'help' => '¿Se debe mostrar automáticamente la previsualización del PDF en la pantalla de previsualización?',
+]);
 ?>
                 </div>
             </div>
