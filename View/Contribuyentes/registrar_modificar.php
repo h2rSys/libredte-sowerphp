@@ -375,6 +375,14 @@ if (!empty($tipos_dte)) {
 }
 echo $f->input([
     'type' => 'select',
+    'name' => 'config_emision_solo_items_codificados',
+    'label' => 'Sólo items codificados',
+    'options' => ['No', 'Si'],
+    'value' => isset($Contribuyente) ? $Contribuyente->config_emision_solo_items_codificados : 0,
+    'help' => '¿Restringir la creación de documentos sólo a items de productos o servicios que estén codificados?',
+]);
+echo $f->input([
+    'type' => 'select',
     'name' => 'config_extra_exenta',
     'label' => 'Empresa exenta',
     'options' => ['No', 'Si'],

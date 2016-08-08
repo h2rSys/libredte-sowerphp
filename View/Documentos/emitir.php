@@ -84,13 +84,13 @@ if ($Emisor->config_extra_impuestos_adicionales) {
 }
 $titles[] = 'Subtotal';
 $inputs = [
-    ['name'=>'VlrCodigo', 'attr'=>'maxlength="35" style="text-align:center;width:5em" onblur="DTE.setItem('.$Emisor->rut.', this)" autocomplete="off"', 'class'=>'typeahead'],
-    ['name'=>'NmbItem', 'attr'=>'maxlength="80"'],
+    ['name'=>'VlrCodigo', 'attr'=>'maxlength="35" style="text-align:center;width:5em" onblur="DTE.setItem('.$Emisor->rut.', this)" autocomplete="off"', 'class'=>'typeahead', 'check'=>($Emisor->config_emision_solo_items_codificados?'notempty':false)],
+    ['name'=>'NmbItem', 'attr'=>'maxlength="80"'.($Emisor->config_emision_solo_items_codificados?' readonly="readonly"':'')],
     ['name'=>'DscItem', 'attr'=>'maxlength="1000"'],
     ['name'=>'IndExe', 'type'=>'select', 'options'=>['no', 'si'], 'attr'=>'style="width:5em" onblur="DTE.calcular()"'],
     ['name'=>'QtyItem', 'value'=>1, 'attr'=>'maxlength="19" style="text-align:center;width:4em" onblur="DTE.calcular()"'],
     ['name'=>'UnmdItem', 'attr'=>'maxlength="4" style="width:5em"'],
-    ['name'=>'PrcItem', 'attr'=>'maxlength="12" style="text-align:center;width:7em" onblur="DTE.calcular()"'],
+    ['name'=>'PrcItem', 'attr'=>'maxlength="12" style="text-align:center;width:7em" onblur="DTE.calcular()"'.($Emisor->config_emision_solo_items_codificados?' readonly="readonly"':'')],
     ['name'=>'ValorDR', 'value'=>0, 'attr'=>'maxlength="12" style="text-align:center;width:5em" onblur="DTE.calcular()"'],
     ['name'=>'TpoValor', 'type'=>'select', 'options'=>['%'=>'%','$'=>'$'], 'attr'=>'style="width:5em" onblur="DTE.calcular()"'],
 ];
