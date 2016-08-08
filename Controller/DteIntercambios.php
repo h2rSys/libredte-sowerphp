@@ -334,7 +334,7 @@ class Controller_DteIntercambios extends \Controller_App
                     'Recinto' => $_POST['Recinto'],
                     'RutFirma' => $Firma->getID(),
                 ]);
-                $EnvioRecibos_r[] = 'T'.$_POST['TipoDTE'][$i].'F'.$_POST['Folio'][$i];
+                $EnvioRecibos_r[] = 'LibreDTE_T'.$_POST['TipoDTE'][$i].'F'.$_POST['Folio'][$i];
             }
         }
         // generar y validar XML
