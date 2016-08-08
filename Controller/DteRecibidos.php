@@ -85,7 +85,7 @@ class Controller_DteRecibidos extends \Controller_App
     /**
      * Acción que permite agregar un DTE recibido
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-15
+     * @version 2016-08-08
      */
     public function agregar()
     {
@@ -98,6 +98,7 @@ class Controller_DteRecibidos extends \Controller_App
             'iva_no_recuperables' => (new \website\Dte\Admin\Mantenedores\Model_IvaNoRecuperables())->getList(),
             'impuesto_adicionales' => (new \website\Dte\Admin\Mantenedores\Model_ImpuestoAdicionales())->getList(),
             'iva_tasa' => \sasco\LibreDTE\Sii::getIVA(),
+            'sucursales' => $Emisor->getSucursales(),
         ]);
         // procesar formulario si se pasó
         if (isset($_POST['submit']))
@@ -109,7 +110,7 @@ class Controller_DteRecibidos extends \Controller_App
     /**
      * Acción que permite editar un DTE recibido
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-03
+     * @version 2016-08-08
      */
     public function modificar($emisor, $dte, $folio)
     {
@@ -131,6 +132,7 @@ class Controller_DteRecibidos extends \Controller_App
             'iva_no_recuperables' => (new \website\Dte\Admin\Mantenedores\Model_IvaNoRecuperables())->getList(),
             'impuesto_adicionales' => (new \website\Dte\Admin\Mantenedores\Model_ImpuestoAdicionales())->getList(),
             'iva_tasa' => \sasco\LibreDTE\Sii::getIVA(),
+            'sucursales' => $Emisor->getSucursales(),
         ]);
         // procesar formulario si se pasó
         if (isset($_POST['submit']))
@@ -142,7 +144,7 @@ class Controller_DteRecibidos extends \Controller_App
     /**
      * Método que agrega o modifica un DTE recibido
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-17
+     * @version 2016-08-08
      */
     private function save()
     {
@@ -165,7 +167,6 @@ class Controller_DteRecibidos extends \Controller_App
         $DteRecibido->exento = !empty($_POST['exento']) ? $_POST['exento'] : null;
         $DteRecibido->neto = !empty($_POST['neto']) ? $_POST['neto'] : null;
         $DteRecibido->iva = !empty($_POST['iva']) ? $_POST['iva'] : round((int)$DteRecibido->neto * ($DteRecibido->tasa/100));
-        $DteRecibido->total = (int)$DteRecibido->exento + (int)$DteRecibido->neto + $DteRecibido->iva;
         $DteRecibido->usuario = $this->Auth->User->id;
         // iva uso común, no recuperable e impuesto adicional
         $DteRecibido->iva_uso_comun = !empty($_POST['iva_uso_comun']) ? $_POST['iva_uso_comun'] : null;
@@ -188,6 +189,14 @@ class Controller_DteRecibidos extends \Controller_App
         $DteRecibido->monto_iva_activo_fijo = !empty($_POST['monto_iva_activo_fijo']) ? $_POST['monto_iva_activo_fijo'] : null;
         $DteRecibido->iva_no_retenido = !empty($_POST['iva_no_retenido']) ? $_POST['iva_no_retenido'] : null;
         $DteRecibido->periodo = !empty($_POST['periodo']) ? $_POST['periodo'] : null;
+        $DteRecibido->impuesto_puros = !empty($_POST['impuesto_puros']) ? $_POST['impuesto_puros'] : null;
+        $DteRecibido->impuesto_cigarrillos = !empty($_POST['impuesto_cigarrillos']) ? $_POST['impuesto_cigarrillos'] : null;
+        $DteRecibido->impuesto_tabaco_elaborado = !empty($_POST['impuesto_tabaco_elaborado']) ? $_POST['impuesto_tabaco_elaborado'] : null;
+        $DteRecibido->impuesto_vehiculos = !empty($_POST['impuesto_vehiculos']) ? $_POST['impuesto_vehiculos'] : null;
+        $DteRecibido->numero_interno = !empty($_POST['numero_interno']) ? $_POST['numero_interno'] : null;
+        $DteRecibido->emisor_nc_nd_fc = isset($_POST['emisor_nc_nd_fc']) ? 1 : null;
+        $DteRecibido->sucursal_sii_receptor = !empty($_POST['sucursal_sii_receptor']) ? $_POST['sucursal_sii_receptor'] : null;
+        $DteRecibido->total = (int)$DteRecibido->exento + (int)$DteRecibido->neto + (int)$DteRecibido->iva;
         // si el DTE es de producción y es electrónico entonces se consultará su
         // estado antes de poder guardar, esto evitará agregar documentos que no
         // han sido recibidos en el SII o sus datos son incorrectos

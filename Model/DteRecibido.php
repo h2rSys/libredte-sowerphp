@@ -64,6 +64,13 @@ class Model_DteRecibido extends \Model_App
     public $monto_iva_activo_fijo; ///< integer(32) NULL DEFAULT ''
     public $iva_no_retenido; ///< integer(32) NULL DEFAULT ''
     public $periodo; ///< integer(32) NULL DEFAULT ''
+    public $impuesto_puros; ///< integer(32) NULL DEFAULT ''
+    public $impuesto_cigarrillos; ///< integer(32) NULL DEFAULT ''
+    public $impuesto_tabaco_elaborado; ///< integer(32) NULL DEFAULT ''
+    public $impuesto_vehiculos; ///< integer(32) NULL DEFAULT ''
+    public $numero_interno; ///< integer(32) NULL DEFAULT ''
+    public $emisor_nc_nd_fc; ///< smallint(16) NULL DEFAULT ''
+    public $sucursal_sii_receptor; ///< integer(32) NULL DEFAULT ''
 
     // Información de las columnas de la tabla en la base de datos
     public static $columnsInfo = array(
@@ -333,6 +340,83 @@ class Model_DteRecibido extends \Model_App
         ),
         'periodo' => array(
             'name'      => 'Período',
+            'comment'   => '',
+            'type'      => 'integer',
+            'length'    => 32,
+            'null'      => true,
+            'default'   => '',
+            'auto'      => false,
+            'pk'        => false,
+            'fk'        => null
+        ),
+        'impuesto_puros' => array(
+            'name'      => 'Impuesto Puros',
+            'comment'   => '',
+            'type'      => 'integer',
+            'length'    => 32,
+            'null'      => true,
+            'default'   => '',
+            'auto'      => false,
+            'pk'        => false,
+            'fk'        => null
+        ),
+        'impuesto_cigarrillos' => array(
+            'name'      => 'Impuesto Cigarrillos',
+            'comment'   => '',
+            'type'      => 'integer',
+            'length'    => 32,
+            'null'      => true,
+            'default'   => '',
+            'auto'      => false,
+            'pk'        => false,
+            'fk'        => null
+        ),
+        'impuesto_tabaco_elaborado' => array(
+            'name'      => 'Impuesto Tabaco Elaborado',
+            'comment'   => '',
+            'type'      => 'integer',
+            'length'    => 32,
+            'null'      => true,
+            'default'   => '',
+            'auto'      => false,
+            'pk'        => false,
+            'fk'        => null
+        ),
+        'impuesto_vehiculos' => array(
+            'name'      => 'Impuesto Vehiculos',
+            'comment'   => '',
+            'type'      => 'integer',
+            'length'    => 32,
+            'null'      => true,
+            'default'   => '',
+            'auto'      => false,
+            'pk'        => false,
+            'fk'        => null
+        ),
+        'numero_interno' => array(
+            'name'      => 'Numero Interno',
+            'comment'   => '',
+            'type'      => 'integer',
+            'length'    => 32,
+            'null'      => true,
+            'default'   => '',
+            'auto'      => false,
+            'pk'        => false,
+            'fk'        => null
+        ),
+        'emisor_nc_nd_fc' => array(
+            'name'      => 'Emisor Nc Nd Fc',
+            'comment'   => '',
+            'type'      => 'smallint',
+            'length'    => 16,
+            'null'      => true,
+            'default'   => '',
+            'auto'      => false,
+            'pk'        => false,
+            'fk'        => null
+        ),
+        'sucursal_sii_receptor' => array(
+            'name'      => 'Sucursal Sii Receptor',
             'comment'   => '',
             'type'      => 'integer',
             'length'    => 32,

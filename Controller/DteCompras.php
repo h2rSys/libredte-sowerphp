@@ -27,7 +27,7 @@ namespace website\Dte;
 /**
  * Controlador de compras
  * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
- * @version 2016-06-14
+ * @version 2016-08-07
  */
 class Controller_DteCompras extends Controller_Base_Libros
 {
@@ -54,16 +54,22 @@ class Controller_DteCompras extends Controller_Base_Libros
         'iva_no_recuperable' => 'CodIVANoRec',
         'iva_no_recuperable_monto' => 'MntIVANoRec',
         'iva_uso_comun_monto' => 'IVAUsoComun',
-        'iva_uso_comun' => 'FctProp',
         'impuesto_adicional' => 'CodImp',
         'impuesto_adicional_tasa' => 'TasaImp',
         'impuesto_adicional_monto' => 'MntImp',
-        'total' => 'MntTotal',
         'impuesto_sin_credito' => 'MntSinCred',
         'monto_activo_fijo' => 'MntActivoFijo',
         'monto_iva_activo_fijo' => 'MntIVAActivoFijo',
         'iva_no_retenido' => 'IVANoRetenido',
+        'impuesto_puros' => 'TabPuros',
+        'impuesto_cigarrillos' => 'TabCigarrillos',
+        'impuesto_tabaco_elaborado' => 'TabElaborado',
+        'impuesto_vehiculos' => 'ImpVehiculo',
         'sucursal_sii' => 'CdgSIISucur',
+        'numero_interno' => 'NumInt',
+        'emisor_nc_nd_fc' => 'Emisor',
+        'total' => 'MntTotal',
+        'iva_uso_comun' => 'FctProp',
     ]; ///< Mapeo columna en BD a nombre en detalle del libro
 
     /**

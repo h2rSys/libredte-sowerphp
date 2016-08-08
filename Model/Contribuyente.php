@@ -1408,7 +1408,7 @@ class Model_Contribuyente extends \Model_App
     /**
      * Método que entrega el resumen de las compras de un período
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-05-28
+     * @version 2016-08-07
      */
     public function getCompras($periodo)
     {
@@ -1439,16 +1439,22 @@ class Model_Contribuyente extends \Model_App
                     r.iva_no_recuperable,
                     NULL AS iva_no_recuperable_monto,
                     NULL AS iva_uso_comun_monto,
-                    r.iva_uso_comun,
                     r.impuesto_adicional'.($this->db->config['type']=='PostgreSQL'?'::TEXT':'').',
                     r.impuesto_adicional_tasa'.($this->db->config['type']=='PostgreSQL'?'::TEXT':'').',
                     \'\' AS impuesto_adicional_monto,
-                    r.total,
                     r.impuesto_sin_credito,
                     r.monto_activo_fijo,
                     r.monto_iva_activo_fijo,
                     r.iva_no_retenido,
-                    r.sucursal_sii
+                    r.impuesto_puros,
+                    r.impuesto_cigarrillos,
+                    r.impuesto_tabaco_elaborado,
+                    r.impuesto_vehiculos,
+                    r.sucursal_sii,
+                    r.numero_interno,
+                    r.emisor_nc_nd_fc,
+                    r.total,
+                    r.iva_uso_comun
                 FROM dte_tipo AS t, dte_recibido AS r, contribuyente AS e
                 WHERE
                     t.codigo = r.dte
@@ -1473,16 +1479,22 @@ class Model_Contribuyente extends \Model_App
                     NULL AS iva_no_recuperable,
                     NULL AS iva_no_recuperable_monto,
                     NULL AS iva_uso_comun_monto,
-                    NULL AS iva_uso_comun,
                     '.$impuesto_codigo.' AS impuesto_adicional,
                     '.$impuesto_tasa.' AS impuesto_adicional_tasa,
                     '.$impuesto_monto.' AS impuesto_adicional_monto,
+                    NULL AS impuesto_sin_credito,
+                    NULL AS monto_activo_fijo,
+                    NULL AS monto_iva_activo_fijo,
+                    NULL AS iva_no_retenido,
+                    NULL AS impuesto_puros,
+                    NULL AS impuesto_cigarrillos,
+                    NULL AS impuesto_tabaco_elaborado,
+                    NULL AS impuesto_vehiculos,
+                    NULL AS sucursal_sii,
+                    NULL AS numero_interno,
+                    NULL AS emisor_nc_nd_fc,
                     r.total,
-                    NULL impuesto_sin_credito,
-                    NULL monto_activo_fijo,
-                    NULL monto_iva_activo_fijo,
-                    NULL iva_no_retenido,
-                    NULL sucursal_sii
+                    NULL AS iva_uso_comun
                 FROM dte_emitido AS r, contribuyente AS e
                 WHERE r.receptor = e.rut AND r.emisor = :rut AND r.certificacion = :certificacion AND '.$periodo_col.' = :periodo AND r.dte = 46
             )

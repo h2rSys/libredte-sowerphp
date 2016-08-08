@@ -335,7 +335,14 @@ CREATE TABLE dte_recibido (
 	monto_activo_fijo INTEGER,
 	monto_iva_activo_fijo INTEGER,
 	iva_no_retenido INTEGER,
+	impuesto_puros INTEGER,
+	impuesto_cigarrillos INTEGER,
+	impuesto_tabaco_elaborado INTEGER,
+	impuesto_vehiculos INTEGER,
+	numero_interno INTEGER,
+	emisor_nc_nd_fc SMALLINT,
 	periodo INTEGER,
+	sucursal_sii_receptor INTEGER
 	CONSTRAINT dte_recibido_pk PRIMARY KEY (emisor, dte, folio, certificacion),
 	CONSTRAINT dte_recibido_emisor_fk FOREIGN KEY (emisor)
 		REFERENCES contribuyente (rut) MATCH FULL

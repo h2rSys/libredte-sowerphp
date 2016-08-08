@@ -100,11 +100,34 @@ echo $f->input([
     'attr' => (isset($DteRecibido) and $DteRecibido->intercambio) ? 'readonly="readonly"' : '',
 ]);
 echo $f->input([
+    'type' => 'select',
+    'name' => 'sucursal_sii_receptor',
+    'label' => 'Sucursal',
+    'options' => $sucursales,
+    'value' => isset($DteRecibido) ? $DteRecibido->sucursal_sii_receptor : '',
+    'check' => 'integer',
+    'help' => 'Sucursal a la que asociar el documento',
+]);
+echo $f->input([
+    'name' => 'numero_interno',
+    'label' => 'Número interno',
+    'value' => isset($DteRecibido) ? $DteRecibido->numero_interno : '',
+    'check' => 'integer',
+    'help' => 'Número de registro contable asociado al documento',
+]);
+echo $f->input([
     'name' => 'periodo',
     'label' => 'Período',
     'value' => isset($DteRecibido) ? $DteRecibido->periodo : '',
     'check' => 'integer',
     'help' => 'Período en el que registrar el documento, sólo si es diferente al mes de la fecha de emisión. Formato: AAAAMM Ejemplo: '.\sowerphp\general\Utility_Date::nextPeriod(),
+]);
+echo $f->input([
+    'type' => 'checkbox',
+    'name' => 'emisor_nc_nd_fc',
+    'checked' => (isset($DteRecibido) and $DteRecibido->emisor_nc_nd_fc) ? true : false,
+    'label' => '¿NC/ND de FC?',
+    'help' => 'Corresponde a una nota de crédito o débito de una factura de compra',
 ]);
 echo '</div>',"\n";
 echo '<div class="col-md-6">',"\n";
@@ -158,6 +181,30 @@ echo $f->input([
     'name' => 'iva_no_retenido',
     'label' => 'IVA no retenido',
     'value' => isset($DteRecibido) ? $DteRecibido->iva_no_retenido : '',
+    'check' => 'integer',
+]);
+echo $f->input([
+    'name' => 'impuesto_puros',
+    'label' => 'Impuesto puros',
+    'value' => isset($DteRecibido) ? $DteRecibido->impuesto_puros : '',
+    'check' => 'integer',
+]);
+echo $f->input([
+    'name' => 'impuesto_cigarrillos',
+    'label' => 'Impuesto cigarrillos',
+    'value' => isset($DteRecibido) ? $DteRecibido->impuesto_cigarrillos : '',
+    'check' => 'integer',
+]);
+echo $f->input([
+    'name' => 'impuesto_tabaco_elaborado',
+    'label' => 'Impuesto tabaco elaborado',
+    'value' => isset($DteRecibido) ? $DteRecibido->impuesto_tabaco_elaborado : '',
+    'check' => 'integer',
+]);
+echo $f->input([
+    'name' => 'impuesto_vehiculos',
+    'label' => 'Impuesto vehículos',
+    'value' => isset($DteRecibido) ? $DteRecibido->impuesto_vehiculos : '',
     'check' => 'integer',
 ]);
 echo $f->input([
