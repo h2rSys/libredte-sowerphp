@@ -445,11 +445,16 @@ class Model_Contribuyente extends \Model_App
     /**
      * Método que entrega las actividades económicas del contribuyente
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-01-31
+     * @version 2016-08-08
      */
     public function getListActividades()
     {
-        $actividades = array_merge([$this->actividad_economica], $this->config_extra_otras_actividades);
+        $actividades = [$this->actividad_economica];
+        if ($this->config_extra_otras_actividades) {
+            foreach ($this->config_extra_otras_actividades as $a) {
+                $actividades[] = is_object($a) ? $a->actividad : $a;
+            }
+        }
         $where = [];
         $vars = [];
         foreach ($actividades as $key => $a) {
@@ -462,6 +467,23 @@ class Model_Contribuyente extends \Model_App
             WHERE codigo IN ('.implode(',', $where).')
             ORDER BY actividad_economica
         ', $vars);
+    }
+
+    /**
+     * Método que entrega el listado de giros del contribuyente por cada
+     * actividad económmica que tiene registrada
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-08-08
+     */
+    public function getListGiros()
+    {
+        $giros = [$this->actividad_economica => $this->giro];
+        if ($this->config_extra_otras_actividades) {
+            foreach ($this->config_extra_otras_actividades as $a) {
+                $giros[is_object($a) ? $a->actividad : $a] = is_object($a) ? ($a->giro?$a->giro:$this->giro) : $this->giro;
+            }
+        }
+        return $giros;
     }
 
     /**
@@ -1806,6 +1828,23 @@ class Model_Contribuyente extends \Model_App
                 AND track_id IS NOT NULL
                 AND (revision_estado IS NULL OR revision_estado = \'-11\')
         ', [':rut'=>$this->rut, ':certificacion'=>(int)$this->config_ambiente_en_certificacion]);
+    }
+
+    /**
+     * Método que entrega el listado de sucursales del contribuyente con los
+     * codigos de actividad económica asociados a cada una (uno por sucursal)
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-08-08
+     */
+    public function getSucursalesActividades()
+    {
+        $actividades = [0 => $this->actividad_economica];
+        if ($this->config_extra_sucursales) {
+            foreach ($this->config_extra_sucursales as $sucursal) {
+                $actividades[$sucursal->codigo] = $sucursal->actividad_economica ? $sucursal->actividad_economica : $this->actividad_economica;
+            }
+        }
+        return $actividades;
     }
 
     /**

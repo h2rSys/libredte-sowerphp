@@ -295,7 +295,7 @@ class Controller_Documentos extends \Controller_App
     /**
      * Acción para mostrar página de emisión de DTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-07-13
+     * @version 2016-08-08
      */
     public function emitir($referencia_dte = null, $referencia_folio = null, $dte_defecto = null, $referencia_codigo = '', $referencia_razon = '')
     {
@@ -328,7 +328,9 @@ class Controller_Documentos extends \Controller_App
         $this->set([
             '_header_extra' => ['js'=>['/dte/js/dte.js', '/js/typeahead.bundle.min.js', '/js/js.js'], 'css'=>['/dte/css/dte.css', '/css/typeahead.css']],
             'Emisor' => $Emisor,
+            'sucursales_actividades' => $Emisor->getSucursalesActividades(),
             'actividades_economicas' => $Emisor->getListActividades(),
+            'giros' => $Emisor->getListGiros(),
             'sucursales' => $Emisor->getSucursales(),
             'sucursal' => '', // TODO: sucursal por defecto
             'comunas' => (new \sowerphp\app\Sistema\General\DivisionGeopolitica\Model_Comunas())->getList(),

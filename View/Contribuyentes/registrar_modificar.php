@@ -68,28 +68,37 @@ echo $f->input([
     'value' => isset($Contribuyente) ? $Contribuyente->giro : null,
     'check' => 'notempty',
     'attr' => 'maxlength="80"',
+    'help' => 'Indique el giro comercial principal de la empresa (sin utilizar abreviaciones)',
 ]);
 $config_extra_otras_actividades = [];
 if (isset($Contribuyente) and $Contribuyente->config_extra_otras_actividades) {
     foreach ($Contribuyente->config_extra_otras_actividades as $a) {
-        $config_extra_otras_actividades[] = ['config_extra_otras_actividades'=>$a];
+        $config_extra_otras_actividades[] = [
+            'config_extra_otras_actividades_actividad' => is_object($a) ? $a->actividad : $a,
+            'config_extra_otras_actividades_giro' => is_object($a) ? $a->giro : '',
+        ];
     }
 }
 echo $f->input([
     'type' => 'js',
     'id' => 'otras_actividades',
     'label' => 'Otras actividades',
-    'titles' => ['Actividad económica'],
+    'titles' => ['Actividad económica', 'Giro'],
     'inputs' => [
         [
             'type' => 'select',
-            'name' => 'config_extra_otras_actividades',
+            'name' => 'config_extra_otras_actividades_actividad',
             'options' => [''=>'Seleccionar una actividad económica'] + $actividades_economicas,
             'check' => 'notempty',
+        ],
+        [
+            'name' => 'config_extra_otras_actividades_giro',
+            'placeholder' => 'Mismo giro actividad principal',
+            'attr' => 'maxlength="80" style="min-width:20em"',
         ]
     ],
     'values' => $config_extra_otras_actividades,
-    'help' => 'Indique las actividades económicas secundarias de la empresa',
+    'help' => 'Indique las actividades económicas secundarias de la empresa y los giros (si son diferentes al principal)',
 ]);
 echo $f->input([
     'name' => 'direccion',
@@ -116,6 +125,7 @@ if (isset($Contribuyente) and $Contribuyente->config_extra_sucursales) {
             'config_extra_sucursales_sucursal' => $sucursal->sucursal,
             'config_extra_sucursales_direccion' => $sucursal->direccion,
             'config_extra_sucursales_comuna' => $sucursal->comuna,
+            'config_extra_sucursales_actividad_economica' => !empty($sucursal->actividad_economica) ? $sucursal->actividad_economica : null,
         ];
     }
 }
@@ -123,16 +133,17 @@ echo $f->input([
     'type' => 'js',
     'id' => 'sucursales',
     'label' => 'Sucursales',
-    'titles' => ['Código SII', 'Nombre', 'Dirección', 'Comuna'],
+    'titles' => ['Código SII', 'Nombre', 'Dirección', 'Comuna', 'Act. Económ.'],
     'inputs' => [
         [
             'name' => 'config_extra_sucursales_codigo',
             'check' => 'notempty integer',
+            'attr' => 'style="max-width:8em"'
         ],
         [
             'name' => 'config_extra_sucursales_sucursal',
             'check' => 'notempty',
-            'attr' => 'maxlength="20"',
+            'attr' => 'maxlength="20" style="max-width:12em"',
         ],
         [
             'name' => 'config_extra_sucursales_direccion',
@@ -144,6 +155,12 @@ echo $f->input([
             'name' => 'config_extra_sucursales_comuna',
             'options' => [''=>'Seleccionar una comuna'] + $comunas,
             'check' => 'notempty',
+        ],
+        [
+            'type' => 'select',
+            'name' => 'config_extra_sucursales_actividad_economica',
+            'options' => [''=>'Misma casa matriz'] + (isset($Contribuyente)?$Contribuyente->getListActividades():[]),
+            'attr' => 'style="max-width:14em"'
         ]
     ],
     'values' => $config_extra_sucursales,

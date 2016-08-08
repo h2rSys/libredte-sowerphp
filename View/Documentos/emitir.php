@@ -17,10 +17,10 @@ echo $f->begin(['id'=>'emitir_dte', 'focus'=>'RUTRecepField', 'action'=>$_base.'
     </div>
     <!-- DATOS DEL EMISOR -->
     <div class="row">
-        <div class="form-group col-md-3"><?=$f->input(['name'=>'GiroEmis', 'placeholder' => 'Giro del emisor', 'popover' => 'Giro del emisor del DTE', 'value'=>(isset($DteEmisor)?(isset($DteEmisor['GiroEmis'])?$DteEmisor['GiroEmis']:$DteEmisor['GiroEmisor']):$Emisor->giro), 'check' => 'notempty', 'attr' => 'maxlength="80"'])?></div>
-        <div class="form-group col-md-3"><?=$f->input(['type' => 'select', 'name' => 'Acteco', 'options' => $actividades_economicas, 'value'=>((isset($DteEmisor) and isset($DteEmisor['Acteco']))?$DteEmisor['Acteco']:$Emisor->actividad_economica), 'check' => 'notempty'])?></div>
-        <div class="form-group col-md-4"><?=$f->input(['type' => 'select', 'name' => 'CdgSIISucur', 'value' => ((isset($DteEmisor)and!empty($DteEmisor['CdgSIISucur']))?$DteEmisor['CdgSIISucur']:$sucursal), 'options' => $sucursales])?></div>
         <div class="form-group col-md-2"><?=$f->input(['name'=>'CdgVendedor', 'placeholder' => 'Código vendedor', 'popover' => 'Código del vendedor asociado al DTE', 'value'=>((isset($DteEmisor)and!empty($DteEmisor['CdgVendedor']))?$DteEmisor['CdgVendedor']:$_Auth->User->usuario), 'check' => 'notempty', 'attr' => 'maxlength="60"'])?></div>
+        <div class="form-group col-md-4"><?=$f->input(['type' => 'select', 'name' => 'CdgSIISucur', 'value' => ((isset($DteEmisor)and!empty($DteEmisor['CdgSIISucur']))?$DteEmisor['CdgSIISucur']:$sucursal), 'options' => $sucursales, 'attr'=>'onchange="emisor_set_actividad()"'])?></div>
+        <div class="form-group col-md-3"><?=$f->input(['type' => 'select', 'name' => 'Acteco', 'options' => $actividades_economicas, 'value'=>((isset($DteEmisor) and isset($DteEmisor['Acteco']))?$DteEmisor['Acteco']:$Emisor->actividad_economica), 'check' => 'notempty', 'attr'=>'onchange="emisor_set_giro()"'])?></div>
+        <div class="form-group col-md-3"><?=$f->input(['name'=>'GiroEmis', 'placeholder' => 'Giro del emisor', 'popover' => 'Giro del emisor del DTE', 'value'=>(isset($DteEmisor)?(isset($DteEmisor['GiroEmis'])?$DteEmisor['GiroEmis']:$DteEmisor['GiroEmisor']):$Emisor->giro), 'check' => 'notempty', 'attr' => 'maxlength="80"'])?></div>
     </div>
     <p>(*) modificar el giro y/o actividad económica del emisor sólo afectará a la emisión de este documento, no se guardarán estos cambios.</p>
     <!-- DATOS DEL RECEPTOR -->
@@ -263,6 +263,15 @@ var codigo_typeahead = [
         limit: 20
     }
 ];
+var giros = <?=json_encode($giros)?>;
+var sucursales_actividades = <?=json_encode($sucursales_actividades)?>;
+function emisor_set_actividad() {
+    document.getElementById("ActecoField").value = sucursales_actividades[document.getElementById("CdgSIISucurField").value];
+    emisor_set_giro();
+}
+function emisor_set_giro() {
+    document.getElementById("GiroEmisField").value = giros[document.getElementById("ActecoField").value];
+}
 function item_codigo_typeahead(tr) {
     $(tr.childNodes[0].childNodes[0].childNodes[0]).typeahead(codigo_typeahead[0], codigo_typeahead[1]);
 }

@@ -253,10 +253,26 @@ class Controller_Contribuyentes extends \Controller_App
      * Método que prepara los datos de configuraciones del contribuyente para
      * ser guardados
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-08-03
+     * @version 2016-08-08
      */
     private function prepararDatosContribuyente(&$Contribuyente)
     {
+        // crear arreglo con actividades económicas secundarias
+        if (!empty($_POST['config_extra_otras_actividades_actividad'])) {
+            $n_codigos = count($_POST['config_extra_otras_actividades_actividad']);
+            for ($i=0; $i<$n_codigos; $i++) {
+                if (!empty($_POST['config_extra_otras_actividades_actividad'][$i])) {
+                    $_POST['config_extra_otras_actividades'][] = [
+                        'actividad' => (int)$_POST['config_extra_otras_actividades_actividad'][$i],
+                        'giro' => $_POST['config_extra_otras_actividades_giro'][$i],
+                    ];
+                }
+            }
+            unset($_POST['config_extra_otras_actividades_actividad']);
+            unset($_POST['config_extra_otras_actividades_giro']);
+        } else {
+            $_POST['config_extra_otras_actividades'] = null;
+        }
         // crear arreglo con sucursales
         if (!empty($_POST['config_extra_sucursales_codigo'])) {
             $_POST['config_extra_sucursales'] = [];
@@ -268,6 +284,7 @@ class Controller_Contribuyentes extends \Controller_App
                         'sucursal' => $_POST['config_extra_sucursales_sucursal'][$i],
                         'direccion' => $_POST['config_extra_sucursales_direccion'][$i],
                         'comuna' => $_POST['config_extra_sucursales_comuna'][$i],
+                        'actividad_economica' => $_POST['config_extra_sucursales_actividad_economica'][$i],
                     ];
                 }
             }
@@ -275,6 +292,7 @@ class Controller_Contribuyentes extends \Controller_App
             unset($_POST['config_extra_sucursales_sucursal']);
             unset($_POST['config_extra_sucursales_direccion']);
             unset($_POST['config_extra_sucursales_comuna']);
+            unset($_POST['config_extra_sucursales_actividad_economica']);
         } else {
             $_POST['config_extra_sucursales'] = null;
         }
