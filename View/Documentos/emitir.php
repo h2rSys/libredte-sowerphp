@@ -161,7 +161,7 @@ new \sowerphp\general\View_Helper_Table($impuestos);
     'type'=>'js',
     'id'=>'referencias',
     'label'=>'Referencias',
-    'titles'=>['Fecha DTE ref.', 'DTE referenciado', 'Folio DTE ref.', 'Código ref.', 'Razón referencia'],
+    'titles'=>['Fecha referencia', 'Documento referenciado', 'Folio o N° doc. ref.', 'Código ref.', 'Razón referencia'],
     'inputs'=>[
         ['name'=>'FchRef', 'type'=>'date', 'check'=>'notempty date', 'value'=>date('Y-m-d')],
         ['name'=>'TpoDocRef', 'type'=>'select', 'options'=>[''=>'Tipo de documento referenciado'] + $tipos_dte_referencia, 'attr'=>'onblur="DTE.setFechaReferencia('.$Emisor->rut.', this)"', 'check'=>'notempty'],
