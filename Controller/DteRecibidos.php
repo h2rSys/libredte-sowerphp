@@ -144,7 +144,7 @@ class Controller_DteRecibidos extends \Controller_App
     /**
      * Método que agrega o modifica un DTE recibido
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-08-08
+     * @version 2016-08-09
      */
     private function save()
     {
@@ -170,17 +170,38 @@ class Controller_DteRecibidos extends \Controller_App
         $DteRecibido->usuario = $this->Auth->User->id;
         // iva uso común, no recuperable e impuesto adicional
         $DteRecibido->iva_uso_comun = !empty($_POST['iva_uso_comun']) ? $_POST['iva_uso_comun'] : null;
-        if ($DteRecibido->iva) {
-            $DteRecibido->iva_no_recuperable = !empty($_POST['iva_no_recuperable']) ? $_POST['iva_no_recuperable'] : null;
+        if ($DteRecibido->iva and !empty($_POST['iva_no_recuperable_codigo'])) {
+            $DteRecibido->iva_no_recuperable = [];
+            $n_codigos = count($_POST['iva_no_recuperable_codigo']);
+            for ($i=0; $i<$n_codigos; $i++) {
+                if (!empty($_POST['iva_no_recuperable_codigo'][$i])) {
+                    $DteRecibido->iva_no_recuperable[] = [
+                        'codigo' => $_POST['iva_no_recuperable_codigo'][$i],
+                        'monto' => !empty($_POST['iva_no_recuperable_monto'][$i]) ? $_POST['iva_no_recuperable_monto'][$i] : $DteRecibido->iva,
+                    ];
+                }
+            }
+            $DteRecibido->iva_no_recuperable = $DteRecibido->iva_no_recuperable ? json_encode($DteRecibido->iva_no_recuperable) : null;
         } else {
             $DteRecibido->iva_no_recuperable = null;
         }
-        if (!empty($_POST['impuesto_adicional']) and !empty($_POST['impuesto_adicional_tasa'])) {
-            $DteRecibido->impuesto_adicional = $_POST['impuesto_adicional'];
-            $DteRecibido->impuesto_adicional_tasa = $_POST['impuesto_adicional_tasa'];
+        $impuesto_adicional_monto_total = 0;
+        if (!empty($_POST['impuesto_adicional_codigo'])) {
+            $DteRecibido->impuesto_adicional = [];
+            $n_codigos = count($_POST['impuesto_adicional_codigo']);
+            for ($i=0; $i<$n_codigos; $i++) {
+                if (!empty($_POST['impuesto_adicional_codigo'][$i])) {
+                    $DteRecibido->impuesto_adicional[] = [
+                        'codigo' => $_POST['impuesto_adicional_codigo'][$i],
+                        'tasa' => $_POST['impuesto_adicional_tasa'][$i] ? $_POST['impuesto_adicional_tasa'][$i] : null,
+                        'monto' => $_POST['impuesto_adicional_monto'][$i] ? $_POST['impuesto_adicional_monto'][$i] : null
+                    ];
+                    $impuesto_adicional_monto_total += (int)$_POST['impuesto_adicional_monto'][$i];
+                }
+            }
+            $DteRecibido->impuesto_adicional = $DteRecibido->impuesto_adicional ? json_encode($DteRecibido->impuesto_adicional) : null;
         } else {
             $DteRecibido->impuesto_adicional = null;
-            $DteRecibido->impuesto_adicional_tasa = null;
         }
         $DteRecibido->impuesto_tipo = $_POST['impuesto_tipo'];
         $DteRecibido->anulado = isset($_POST['anulado']) ? 'A' : null;
@@ -196,7 +217,7 @@ class Controller_DteRecibidos extends \Controller_App
         $DteRecibido->numero_interno = !empty($_POST['numero_interno']) ? $_POST['numero_interno'] : null;
         $DteRecibido->emisor_nc_nd_fc = isset($_POST['emisor_nc_nd_fc']) ? 1 : null;
         $DteRecibido->sucursal_sii_receptor = !empty($_POST['sucursal_sii_receptor']) ? $_POST['sucursal_sii_receptor'] : null;
-        $DteRecibido->total = (int)$DteRecibido->exento + (int)$DteRecibido->neto + (int)$DteRecibido->iva;
+        $DteRecibido->total = !empty($_POST['total']) ? $_POST['total'] : (int)$DteRecibido->exento + (int)$DteRecibido->neto + (int)$DteRecibido->iva + $impuesto_adicional_monto_total + (int)$DteRecibido->impuesto_sin_credito + (int)$DteRecibido->impuesto_puros + (int)$DteRecibido->impuesto_cigarrillos + (int)$DteRecibido->impuesto_tabaco_elaborado + (int)$DteRecibido->impuesto_vehiculos;
         // si el DTE es de producción y es electrónico entonces se consultará su
         // estado antes de poder guardar, esto evitará agregar documentos que no
         // han sido recibidos en el SII o sus datos son incorrectos
@@ -218,7 +239,7 @@ class Controller_DteRecibidos extends \Controller_App
                 return;
             } else if (in_array($estado['ESTADO'], ['DNK', 'FAU', 'FNA', 'EMP'])) {
                 \sowerphp\core\Model_Datasource_Session::message(
-                    'Estado DTE: '.$estado, 'error'
+                    'Estado DTE: '.(is_array($estado)?implode('. ', $estado):$estado), 'error'
                 );
                 return;
             }

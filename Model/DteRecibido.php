@@ -53,10 +53,9 @@ class Model_DteRecibido extends \Model_App
     public $total; ///< integer(32) NOT NULL DEFAULT ''
     public $usuario; ///< integer(32) NOT NULL DEFAULT '' FK:usuario.id
     public $intercambio; ///< integer(32) NULL DEFAULT ''
-    public $iva_uso_comun; ///< smallint(16) NULL DEFAULT ''
-    public $iva_no_recuperable; ///< smallint(16) NULL DEFAULT '' FK:iva_no_recuperable.codigo
-    public $impuesto_adicional; ///< smallint(16) NULL DEFAULT '' FK:impuesto_adicional.codigo
-    public $impuesto_adicional_tasa; ///< smallint(16) NULL DEFAULT ''
+    public $iva_uso_comun; ///< integer(32) NULL DEFAULT ''
+    public $iva_no_recuperable; ///< text() NULL DEFAULT ''
+    public $impuesto_adicional; ///< text() NULL DEFAULT ''
     public $impuesto_tipo; ///< smallint(16) NOT NULL DEFAULT '1'
     public $anulado; ///< character(1) NULL DEFAULT ''
     public $impuesto_sin_credito; ///< integer(32) NULL DEFAULT ''
@@ -242,31 +241,20 @@ class Model_DteRecibido extends \Model_App
         'iva_no_recuperable' => array(
             'name'      => 'Iva No Recuperable',
             'comment'   => '',
-            'type'      => 'smallint',
-            'length'    => 16,
-            'null'      => true,
+            'type'      => 'text',
+            'length'    => null,
+            'null'      => false,
             'default'   => '',
             'auto'      => false,
             'pk'        => false,
-            'fk'        => array('table' => 'iva_no_recuperable', 'column' => 'codigo')
+            'fk'        => null
         ),
         'impuesto_adicional' => array(
             'name'      => 'Impuesto Adicional',
             'comment'   => '',
-            'type'      => 'smallint',
-            'length'    => 16,
-            'null'      => true,
-            'default'   => '',
-            'auto'      => false,
-            'pk'        => false,
-            'fk'        => array('table' => 'impuesto_adicional', 'column' => 'codigo')
-        ),
-        'impuesto_adicional_tasa' => array(
-            'name'      => 'Impuesto Adicional Tasa',
-            'comment'   => '',
-            'type'      => 'smallint',
-            'length'    => 16,
-            'null'      => true,
+            'type'      => 'text',
+            'length'    => null,
+            'null'      => false,
             'default'   => '',
             'auto'      => false,
             'pk'        => false,
@@ -522,6 +510,46 @@ class Model_DteRecibido extends \Model_App
         if ($xml===false)
             return false;
         return (array)$xml->xpath('/SII:RESPUESTA/SII:RESP_HDR')[0];
+    }
+
+    /**
+     * Método que entrega los impuestos adicionales del documento
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-08-09
+     */
+    public function getImpuestosAdicionales($prefix = '')
+    {
+        if (!$this->impuesto_adicional)
+            return [];
+        $impuesto_adicional = [];
+        foreach (json_decode($this->impuesto_adicional, true) as $ia) {
+            $fila = [];
+            foreach ($ia as $k => $v) {
+                $fila[$prefix.$k] = $v;
+            }
+            $impuesto_adicional[] = $fila;
+        }
+        return $impuesto_adicional;
+    }
+
+    /**
+     * Método que entrega los valores de IVA no recuperable
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-08-09
+     */
+    public function getIVANoRecuperable($prefix = '')
+    {
+        if (!$this->iva_no_recuperable)
+            return [];
+        $iva_no_recuperable = [];
+        foreach (json_decode($this->iva_no_recuperable, true) as $inr) {
+            $fila = [];
+            foreach ($inr as $k => $v) {
+                $fila[$prefix.$k] = $v;
+            }
+            $iva_no_recuperable[] = $fila;
+        }
+        return $iva_no_recuperable;
     }
 
 }

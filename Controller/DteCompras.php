@@ -51,10 +51,10 @@ class Controller_DteCompras extends Controller_Base_Libros
         'exento' => 'MntExe',
         'neto' => 'MntNeto',
         'iva' => 'MntIVA',
-        'iva_no_recuperable' => 'CodIVANoRec',
+        'iva_no_recuperable_codigo' => 'CodIVANoRec',
         'iva_no_recuperable_monto' => 'MntIVANoRec',
-        'iva_uso_comun_monto' => 'IVAUsoComun',
-        'impuesto_adicional' => 'CodImp',
+        'iva_uso_comun' => 'IVAUsoComun',
+        'impuesto_adicional_codigo' => 'CodImp',
         'impuesto_adicional_tasa' => 'TasaImp',
         'impuesto_adicional_monto' => 'MntImp',
         'impuesto_sin_credito' => 'MntSinCred',
@@ -69,7 +69,7 @@ class Controller_DteCompras extends Controller_Base_Libros
         'numero_interno' => 'NumInt',
         'emisor_nc_nd_fc' => 'Emisor',
         'total' => 'MntTotal',
-        'iva_uso_comun' => 'FctProp',
+        'iva_uso_comun_factor' => 'FctProp',
     ]; ///< Mapeo columna en BD a nombre en detalle del libro
 
     /**

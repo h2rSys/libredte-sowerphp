@@ -230,7 +230,7 @@ class Controller_DteIntercambios extends \Controller_App
     /**
      * Acción que procesa y responde al intercambio recibido
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-15
+     * @version 2016-08-09
      */
     public function responder($codigo)
     {
@@ -445,8 +445,28 @@ class Controller_DteIntercambios extends \Controller_App
                         $DteRecibido->total = (int)$resumen['MntTotal'];
                         $DteRecibido->usuario = $this->Auth->User->id;
                         $DteRecibido->intercambio = $DteIntercambio->codigo;
+                        $DteRecibido->impuesto_tipo = 1; // se asume siempre que es IVA
+                        // copiar impuestos adicionales
+                        $datos = $Dte->getDatos();
+                        if (!empty($datos['Encabezado']['Totales']['ImptoReten'])) {
+                            if (!isset($datos['Encabezado']['Totales']['ImptoReten'][0])) {
+                                $datos['Encabezado']['Totales']['ImptoReten'] = [$datos['Encabezado']['Totales']['ImptoReten']];
+                            }
+                            $DteRecibido->impuesto_adicional = [];
+                            foreach ($datos['Encabezado']['Totales']['ImptoReten'] as $ia) {
+                                $DteRecibido->impuesto_adicional[] = [
+                                    'codigo' => $ia['TipoImp'],
+                                    'tasa' => !empty($ia['TasaImp']) ? $ia['TasaImp'] : null,
+                                    'monto' => $ia['MontoImp'],
+                                ];
+                            }
+                            $DteRecibido->impuesto_adicional = json_encode($DteRecibido->impuesto_adicional);
+                        }
+                        // si es empresa exenta el IVA es no recuperable
                         if ($DteRecibido->iva and $Emisor->config_extra_exenta) {
-                            $DteRecibido->iva_no_recuperable = 1;
+                            $DteRecibido->iva_no_recuperable = json_encode([
+                                ['codigo'=>1, 'monto'=>$DteRecibido->iva]
+                            ]);
                         }
                         $DteRecibido->save();
                     }

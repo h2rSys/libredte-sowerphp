@@ -325,10 +325,9 @@ CREATE TABLE dte_recibido (
 	total INTEGER NOT NULL,
 	usuario INTEGER NOT NULL,
 	intercambio INTEGER,
-	iva_uso_comun SMALLINT,
-	iva_no_recuperable SMALLINT,
-	impuesto_adicional SMALLINT,
-	impuesto_adicional_tasa SMALLINT,
+	iva_uso_comun INTEGER,
+	iva_no_recuperable TEXT,
+	impuesto_adicional TEXT,
 	impuesto_tipo SMALLINT NOT NULL DEFAULT 1,
 	anulado CHAR(1),
 	impuesto_sin_credito INTEGER,
@@ -342,7 +341,7 @@ CREATE TABLE dte_recibido (
 	numero_interno INTEGER,
 	emisor_nc_nd_fc SMALLINT,
 	periodo INTEGER,
-	sucursal_sii_receptor INTEGER
+	sucursal_sii_receptor INTEGER,
 	CONSTRAINT dte_recibido_pk PRIMARY KEY (emisor, dte, folio, certificacion),
 	CONSTRAINT dte_recibido_emisor_fk FOREIGN KEY (emisor)
 		REFERENCES contribuyente (rut) MATCH FULL
@@ -355,12 +354,6 @@ CREATE TABLE dte_recibido (
 		ON UPDATE CASCADE ON DELETE CASCADE,
 	CONSTRAINT dte_recibido_usuario_fk FOREIGN KEY (usuario)
 		REFERENCES usuario (id) MATCH FULL
-		ON UPDATE CASCADE ON DELETE RESTRICT,
-	CONSTRAINT dte_recibido_iva_no_recuperable_fk FOREIGN KEY (iva_no_recuperable)
-		REFERENCES iva_no_recuperable (codigo) MATCH FULL
-		ON UPDATE CASCADE ON DELETE RESTRICT,
-	CONSTRAINT dte_recibido_impuesto_adicional_fk FOREIGN KEY (impuesto_adicional)
-		REFERENCES impuesto_adicional (codigo) MATCH FULL
 		ON UPDATE CASCADE ON DELETE RESTRICT
 );
 CREATE INDEX dte_recibido_fecha_emisor_idx ON dte_recibido (fecha, emisor);

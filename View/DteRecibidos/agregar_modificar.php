@@ -106,14 +106,6 @@ echo $f->input([
     'options' => $sucursales,
     'value' => isset($DteRecibido) ? $DteRecibido->sucursal_sii_receptor : '',
     'check' => 'integer',
-    'help' => 'Sucursal a la que asociar el documento',
-]);
-echo $f->input([
-    'name' => 'numero_interno',
-    'label' => 'Número interno',
-    'value' => isset($DteRecibido) ? $DteRecibido->numero_interno : '',
-    'check' => 'integer',
-    'help' => 'Número de registro contable asociado al documento',
 ]);
 echo $f->input([
     'name' => 'periodo',
@@ -122,42 +114,13 @@ echo $f->input([
     'check' => 'integer',
     'help' => 'Período en el que registrar el documento, sólo si es diferente al mes de la fecha de emisión. Formato: AAAAMM Ejemplo: '.\sowerphp\general\Utility_Date::nextPeriod(),
 ]);
-echo $f->input([
-    'type' => 'checkbox',
-    'name' => 'emisor_nc_nd_fc',
-    'checked' => (isset($DteRecibido) and $DteRecibido->emisor_nc_nd_fc) ? true : false,
-    'label' => '¿NC/ND de FC?',
-    'help' => 'Corresponde a una nota de crédito o débito de una factura de compra',
-]);
 echo '</div>',"\n";
 echo '<div class="col-md-6">',"\n";
 echo $f->input([
     'name' => 'iva_uso_comun',
-    'label' => 'IVA uso común',
+    'label' => 'Monto IVA uso común',
     'check' => 'integer',
     'value' => isset($DteRecibido) ? $DteRecibido->iva_uso_comun : '',
-    'help' => 'Si el IVA es de uso común aquí va el factor de proporcionalidad',
-]);
-echo $f->input([
-    'type' => 'select',
-    'name' => 'iva_no_recuperable',
-    'label' => 'IVA no recuperable',
-    'options' => [''=>'El IVA es recuperable'] + $iva_no_recuperables,
-    'value' => isset($DteRecibido) ? $DteRecibido->iva_no_recuperable : ($Emisor->config_extra_exenta?1:''),
-]);
-echo $f->input([
-    'type' => 'select',
-    'name' => 'impuesto_adicional',
-    'label' => 'Impuesto adicional',
-    'options' => [''=>'Sin impuesto adicional'] + $impuesto_adicionales,
-    'value' => isset($DteRecibido) ? $DteRecibido->impuesto_adicional : '',
-]);
-echo $f->input([
-    'name' => 'impuesto_adicional_tasa',
-    'label' => 'Tasa Imp. adic.',
-    'value' => isset($DteRecibido) ? $DteRecibido->impuesto_adicional_tasa : '',
-    'check' => 'integer',
-    'help' => 'Tasa del impuesto adicional (obligatorio si hay impuesto adicional)'
 ]);
 echo $f->input([
     'name' => 'impuesto_sin_credito',
@@ -208,13 +171,75 @@ echo $f->input([
     'check' => 'integer',
 ]);
 echo $f->input([
+    'name' => 'numero_interno',
+    'label' => 'Número interno',
+    'value' => isset($DteRecibido) ? $DteRecibido->numero_interno : '',
+    'check' => 'integer',
+    'help' => 'Número de registro contable asociado',
+]);
+echo $f->input([
+    'type' => 'checkbox',
+    'name' => 'emisor_nc_nd_fc',
+    'checked' => (isset($DteRecibido) and $DteRecibido->emisor_nc_nd_fc) ? true : false,
+    'label' => '¿NC/ND de FC?',
+    'help' => 'Corresponde a una nota de crédito o débito de una factura de compra',
+]);
+/*echo $f->input([
     'type' => 'checkbox',
     'name' => 'anulado',
     'checked' => (isset($DteRecibido) and $DteRecibido->anulado == 'A') ? true : false,
     'label' => '¿Anulado?',
+]);*/
+echo '</div>',"\n";
+echo '</div>',"\n";
+
+// iva no recuperable e impuestos adicionales
+$f->setColsLabel(2);
+echo $f->input([
+    'type' => 'js',
+    'id' => 'impuesto_adicional',
+    'label' => 'Impuesto adicional',
+    'titles' => ['Código', 'Tasa', 'Monto'],
+    'inputs' => [
+        [
+            'type' => 'select',
+            'name' => 'impuesto_adicional_codigo',
+            'options' => [''=>'Seleccionar código'] + $impuesto_adicionales,
+            'check' => 'notempty',
+        ],
+        [
+            'name' => 'impuesto_adicional_tasa',
+            'check' => 'real',
+        ],
+        [
+            'name' => 'impuesto_adicional_monto',
+            'check' => 'integer',
+        ],
+    ],
+    'values' => isset($DteRecibido) ? $DteRecibido->getImpuestosAdicionales('impuesto_adicional_') : [],
+    'maximo' => 20,
 ]);
-echo '</div>',"\n";
-echo '</div>',"\n";
+echo $f->input([
+    'type' => 'js',
+    'id' => 'iva_no_recuperable',
+    'label' => 'IVA no recuperable',
+    'titles' => ['Código', 'Monto'],
+    'inputs' => [
+        [
+            'type' => 'select',
+            'name' => 'iva_no_recuperable_codigo',
+            'options' => [''=>'Seleccionar código'] + $iva_no_recuperables,
+            'check' => 'notempty',
+        ],
+        [
+            'name' => 'iva_no_recuperable_monto',
+            'check' => 'integer',
+        ],
+    ],
+    'values' => isset($DteRecibido) ? $DteRecibido->getIVANoRecuperable('iva_no_recuperable_') : [],
+    'maximo' => 5,
+]);
+
 // fin formulario
 $f->setStyle(false);
 echo '<div class="row">',"\n";
@@ -226,6 +251,7 @@ echo $f->input([
     'attr' => 'style="width:100%"',
 ]);
 echo '</div>',"\n";
+
 if (isset($DteRecibido)) : ?>
 <div class="col-md-4">
     <a class="btn btn-danger btn-block" href="<?=$_base?>/dte/dte_recibidos/eliminar/<?=$DteRecibido->emisor?>/<?=$DteRecibido->dte?>/<?=$DteRecibido->folio?>" role="button" onclick="return Form.checkSend('¿Confirmar la eliminación del documento?')">Eliminar documento</a>

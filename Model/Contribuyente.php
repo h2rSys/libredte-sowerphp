@@ -1430,7 +1430,7 @@ class Model_Contribuyente extends \Model_App
     /**
      * Método que entrega el resumen de las compras de un período
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-08-07
+     * @version 2016-08-09
      */
     public function getCompras($periodo)
     {
@@ -1459,11 +1459,13 @@ class Model_Contribuyente extends \Model_App
                     r.neto,
                     r.iva,
                     r.iva_no_recuperable,
+                    NULL AS iva_no_recuperable_codigo,
                     NULL AS iva_no_recuperable_monto,
-                    NULL AS iva_uso_comun_monto,
+                    r.iva_uso_comun,
                     r.impuesto_adicional'.($this->db->config['type']=='PostgreSQL'?'::TEXT':'').',
-                    r.impuesto_adicional_tasa'.($this->db->config['type']=='PostgreSQL'?'::TEXT':'').',
-                    \'\' AS impuesto_adicional_monto,
+                    NULL AS impuesto_adicional_codigo,
+                    NULL AS impuesto_adicional_tasa,
+                    NULL AS impuesto_adicional_monto,
                     r.impuesto_sin_credito,
                     r.monto_activo_fijo,
                     r.monto_iva_activo_fijo,
@@ -1475,8 +1477,7 @@ class Model_Contribuyente extends \Model_App
                     r.sucursal_sii,
                     r.numero_interno,
                     r.emisor_nc_nd_fc,
-                    r.total,
-                    r.iva_uso_comun
+                    r.total
                 FROM dte_tipo AS t, dte_recibido AS r, contribuyente AS e
                 WHERE
                     t.codigo = r.dte
@@ -1499,9 +1500,11 @@ class Model_Contribuyente extends \Model_App
                     r.neto,
                     r.iva,
                     NULL AS iva_no_recuperable,
+                    NULL AS iva_no_recuperable_codigo,
                     NULL AS iva_no_recuperable_monto,
-                    NULL AS iva_uso_comun_monto,
-                    '.$impuesto_codigo.' AS impuesto_adicional,
+                    NULL AS iva_uso_comun,
+                    NULL AS impuesto_adicional,
+                    '.$impuesto_codigo.' AS impuesto_adicional_codigo,
                     '.$impuesto_tasa.' AS impuesto_adicional_tasa,
                     '.$impuesto_monto.' AS impuesto_adicional_monto,
                     NULL AS impuesto_sin_credito,
@@ -1515,29 +1518,32 @@ class Model_Contribuyente extends \Model_App
                     NULL AS sucursal_sii,
                     NULL AS numero_interno,
                     NULL AS emisor_nc_nd_fc,
-                    r.total,
-                    NULL AS iva_uso_comun
+                    r.total
                 FROM dte_emitido AS r, contribuyente AS e
                 WHERE r.receptor = e.rut AND r.emisor = :rut AND r.certificacion = :certificacion AND '.$periodo_col.' = :periodo AND r.dte = 46
             )
             ORDER BY fecha, dte, folio
         ', [':rut'=>$this->rut, ':certificacion'=>(int)$this->config_ambiente_en_certificacion, ':periodo'=>$periodo]);
+        // procesar cada compra
         foreach ($compras as &$c) {
             // asignar IVA no recuperable
             if ($c['iva_no_recuperable']) {
-                if (!$c['iva_no_recuperable_monto']) {
-                    $c['iva_no_recuperable_monto'] = round((int)$c['neto']*($c['tasa']/100));
-                }
+                $iva_no_recuperable = json_decode($c['iva_no_recuperable'], true)[0];
+                $c['iva_no_recuperable_codigo'] = $iva_no_recuperable['codigo'];
+                $c['iva_no_recuperable_monto'] = $iva_no_recuperable['monto'];
                 $c['iva'] = 0;
             }
-            // asignar IVA de uso comun
-            if ($c['iva_uso_comun'] and !$c['iva_uso_comun_monto']) {
-                $c['iva_uso_comun_monto'] = round((int)$c['neto']*($c['tasa']/100));
-            }
+            unset($c['iva_no_recuperable']);
             // asignar monto de impuesto adicionl
-            if ($c['impuesto_adicional'] and !$c['impuesto_adicional_monto']) {
-                $c['impuesto_adicional_monto'] = round((int)$c['neto']*($c['impuesto_adicional_tasa']/100));
+            if ($c['impuesto_adicional']) {
+                $impuesto_adicional = json_decode($c['impuesto_adicional'], true)[0];
+                $c['impuesto_adicional_codigo'] = $impuesto_adicional['codigo'];
+                $c['impuesto_adicional_tasa'] = $impuesto_adicional['tasa'];
+                $c['impuesto_adicional_monto'] = $impuesto_adicional['monto'];
             }
+            unset($c['impuesto_adicional']);
+            // asignar factor de proporcionalidad
+            $c['iva_uso_comun_factor'] = $c['iva_uso_comun'] ? round(($c['iva_uso_comun']/$c['iva'])*100) : null;
         }
         return $compras;
     }
