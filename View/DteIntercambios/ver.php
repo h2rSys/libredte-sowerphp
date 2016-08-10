@@ -34,12 +34,12 @@ $(function() {
     <ul class="nav nav-tabs" role="tablist">
         <li role="presentation" class="active"><a href="#email" aria-controls="email" role="tab" data-toggle="tab">Email recibido y PDF</a></li>
         <li role="presentation"><a href="#documentos" aria-controls="documentos" role="tab" data-toggle="tab">Recepción y acuse de recibo</a></li>
+        <li role="presentation"><a href="#avanzado" aria-controls="avanzado" role="tab" data-toggle="tab">Avanzado</a></li>
     </ul>
     <div class="tab-content">
 
 <!-- INICIO DATOS BÁSICOS -->
 <div role="tabpanel" class="tab-pane active" id="email">
-
 <?php
 $de = $DteIntercambio->de;
 if ($DteIntercambio->de!=$DteIntercambio->responder_a)
@@ -49,7 +49,6 @@ new \sowerphp\general\View_Helper_Table([
     [$DteIntercambio->fecha_hora_email, $de, $DteIntercambio->getEmisor()->razon_social, $DteIntercambio->fecha_hora_firma, num($DteIntercambio->documentos), $DteIntercambio->getEstado()->estado, $DteIntercambio->getUsuario()->usuario],
 ]);
 ?>
-
 <p><strong>Asunto</strong>: <?=$DteIntercambio->asunto?></p>
 <p><?=str_replace("\n", '<br/>', strip_tags(base64_decode($DteIntercambio->mensaje)))?></p>
 <?php if ($DteIntercambio->mensaje_html) : ?>
@@ -59,7 +58,6 @@ new \sowerphp\general\View_Helper_Table([
 </a>
 <br/>
 <?php endif; ?>
-
 <div class="row">
     <div class="col-md-4">
         <a class="btn btn-default btn-lg btn-block" href="<?=$_base?>/dte/dte_intercambios/pdf/<?=$DteIntercambio->codigo?>" role="button">
@@ -80,7 +78,6 @@ new \sowerphp\general\View_Helper_Table([
         </a>
     </div>
 </div>
-
 </div>
 <!-- FIN DATOS BÁSICOS -->
 
@@ -211,6 +208,14 @@ echo $f->end(false);
 ?>
 </div>
 <!-- FIN DOCUMENTOS -->
+
+<!-- INICIO AVANZADO -->
+<div role="tabpanel" class="tab-pane" id="avanzado">
+<a class="btn btn-danger btn-lg btn-block" href="<?=$_base?>/dte/dte_intercambios/eliminar/<?=$DteIntercambio->codigo?>" role="button" title="Eliminar intercambio" onclick="return Form.checkSend('¿Confirmar la eliminación del intercambio?')">
+    Eliminar archivo EnvioDTE de intercambio
+</a>
+</div>
+<!-- FIN AVANZADO -->
 
     </div>
 </div>

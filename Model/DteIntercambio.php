@@ -308,7 +308,7 @@ class Model_DteIntercambio extends \Model_App
     /**
      * Método que guarda el enviodte que se ha recibido desde otro contribuyente
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2015-09-28
+     * @version 2016-08-09
      */
     public function save()
     {
@@ -330,7 +330,7 @@ class Model_DteIntercambio extends \Model_App
                 'archivo_md5' => $this->archivo_md5,
             ]);
             if ($existe)
-                return false;
+                return true;
             // guardar entrada
             $this->db->beginTransaction(true);
             $this->codigo = (int)$this->db->getValue('
@@ -402,6 +402,20 @@ class Model_DteIntercambio extends \Model_App
         if (!isset($this->estado))
             return (object)['estado'=>null];
         return (object)['estado'=>\sasco\LibreDTE\Sii\RespuestaEnvio::$estados['envio'][$this->estado]];
+    }
+
+    /**
+     * Método que indica si intercambio se encuentra recibido
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-08-10
+     */
+    public function recibido()
+    {
+        return (bool)$this->db->getValue('
+            SELECT COUNT(*)
+            FROM dte_recibido
+            WHERE receptor = :receptor AND emisor = :emisor AND intercambio = :intercambio
+        ', [':receptor'=>$this->receptor, ':emisor'=>$this->emisor, ':intercambio'=>$this->codigo]);
     }
 
 }

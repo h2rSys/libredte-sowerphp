@@ -109,6 +109,44 @@ class Controller_DteIntercambios extends \Controller_App
     }
 
     /**
+     * Acción que permite eliminar un intercambio desde la bandeja
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-08-10
+     */
+    public function eliminar($codigo)
+    {
+        $Emisor = $this->getContribuyente();
+        // verificar administrador
+        if ($this->Auth->User->id != $Emisor->usuario) {
+            \sowerphp\core\Model_Datasource_Session::message(
+                'No puede eliminar el intercambio, no es el administrador de la empresa', 'error'
+            );
+            $this->redirect('/dte/dte_intercambios/ver/'.$codigo);
+        }
+        // obtener DTE intercambiado
+        $DteIntercambio = new Model_DteIntercambio($Emisor->rut, $codigo, (int)$Emisor->config_ambiente_en_certificacion);
+        if (!$DteIntercambio->exists()) {
+            \sowerphp\core\Model_Datasource_Session::message(
+                'No existe el intercambio solicitado', 'error'
+            );
+            $this->redirect('/dte/dte_intercambios/listar');
+        }
+        // verificar que el intercambio no esté en uso en los documentos recibidos
+        if ($DteIntercambio->recibido()) {
+            \sowerphp\core\Model_Datasource_Session::message(
+                'El intercambio solicitado fue recibido, no se puede eliminar', 'error'
+            );
+            $this->redirect('/dte/dte_intercambios/ver/'.$codigo);
+        }
+        // eliminar el intercambio y redireccionar
+        $DteIntercambio->delete();
+        \sowerphp\core\Model_Datasource_Session::message(
+            'Intercambio '.$codigo.' eliminado', 'ok'
+        );
+        $this->redirect('/dte/dte_intercambios/listar');
+    }
+
+    /**
      * Acción que muestra el mensaje del email de intercambio
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
      * @version 2015-10-08
