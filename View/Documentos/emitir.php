@@ -15,6 +15,12 @@ echo $f->begin(['id'=>'emitir_dte', 'focus'=>'RUTRecepField', 'action'=>$_base.'
         <div class="form-group col-md-3"><?=$f->input(['name'=>'FmaPago', 'type'=>'select', 'options'=>[''=>'Sin forma de pago', 1=>'Contado', 2=>'Crédito', 3=>'Sin costo (entrega gratuita)'], 'value'=>1, 'attr'=>'onblur="DTE.setFormaPago(this.value)"'])?></div>
         <div class="form-group col-md-3"><?=$f->input(['type' => 'date', 'name' => 'FchVenc', 'placeholder'=>'Fecha de vencimiento', 'popover'=>'Día máximo a pagar o día en que se pagó el documento (si es pago anticipado)', 'value'=>date('Y-m-d'), 'check' => 'notempty date'])?></div>
     </div>
+    <!-- INDICADOR DE SERVICIO -->
+    <div class="row">
+        <div class="form-group col-md-6"><?=$f->input(['type'=>'select', 'name'=>'IndServicio', 'options'=>[''=>'Sin indicador de servicios'] + $IndServicio, 'value'=>$Emisor->config_extra_indicador_servicio])?></div>
+        <div class="form-group col-md-3"><?=$f->input(['type' => 'date', 'name' => 'PeriodoDesde', 'placeholder'=>'Período facturación desde', 'popover'=>'Fecha inicial del período de facturación', 'check' => 'date'])?></div>
+        <div class="form-group col-md-3"><?=$f->input(['type' => 'date', 'name' => 'PeriodoHasta', 'placeholder'=>'Período facturación hasta', 'popover'=>'Fecha final del período de facturación', 'check' => 'date'])?></div>
+    </div>
     <!-- DATOS DEL EMISOR -->
     <div class="row">
         <div class="form-group col-md-2"><?=$f->input(['name'=>'CdgVendedor', 'placeholder' => 'Código vendedor', 'popover' => 'Código del vendedor asociado al DTE', 'value'=>((isset($DteEmisor)and!empty($DteEmisor['CdgVendedor']))?$DteEmisor['CdgVendedor']:$_Auth->User->usuario), 'check' => 'notempty', 'attr' => 'maxlength="60"'])?></div>
@@ -65,11 +71,10 @@ echo $f->begin(['id'=>'emitir_dte', 'focus'=>'RUTRecepField', 'action'=>$_base.'
     <div class="row" id="datosExportacion" style="display:none">
         <div class="form-group col-md-12">
             <?php new \sowerphp\general\View_Helper_Table([
-                ['Moneda', 'Nacionalidad', 'Tipo servicio'],
+                ['Moneda', 'Nacionalidad'],
                 [
                     $f->input(['type'=>'select', 'name'=>'TpoMoneda', 'options'=>$monedas]),
                     $f->input(['type'=>'select', 'name'=>'Nacionalidad', 'options'=>[''=>''] + $nacionalidades, 'check'=>'notempty']),
-                    $f->input(['type'=>'select', 'name'=>'IndServicio', 'options'=>[''=>''] + $IndServicio, 'value'=>$Emisor->config_extra_indicador_servicio]),
                 ]
             ]); ?>
         </div>
@@ -265,6 +270,7 @@ var codigo_typeahead = [
 ];
 var giros = <?=json_encode($giros)?>;
 var sucursales_actividades = <?=json_encode($sucursales_actividades)?>;
+var config_extra_indicador_servicio = <?=(int)$Emisor->config_extra_indicador_servicio?>;
 function emisor_set_actividad() {
     document.getElementById("ActecoField").value = sucursales_actividades[document.getElementById("CdgSIISucurField").value];
     emisor_set_giro();

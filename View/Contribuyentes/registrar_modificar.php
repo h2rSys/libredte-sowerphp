@@ -389,11 +389,18 @@ echo $f->input([
     'value' => isset($Contribuyente) ? $Contribuyente->config_extra_exenta : 0,
     'help' => '¿El contribuyente es exento de IVA en todas sus actividades económicas?',
 ]);
+$IndServicio = [
+    1 => 'Factura o boleta de servicios períodicos domiciliarios', // boleta es periodico no domiciliario (se ajusta)
+    2 => 'Factura o boleta de otros servicios períodicos (no domiciliarios)',  // boleta es periodico domiciliario (se ajusta)
+    3 => 'Factura de servicios o boleta de ventas y servicios',
+    4 => 'Factura exportación de servicios de hotelería o boleta de espectáculos emitida por cuenta de terceros',
+    5 => 'Factura exportación de servicios de transporte internacional',
+];
 echo $f->input([
     'type' => 'select',
     'name' => 'config_extra_indicador_servicio',
     'label' => 'Indicador servicio',
-    'options' => [''=>'No', 4=>'Servicios de hotelería'],
+    'options' => [''=>'No'] + $IndServicio,
     'value' => isset($Contribuyente) ? $Contribuyente->config_extra_indicador_servicio : 0,
     'help' => '¿Se debe usar un indicador de servicio por defecto?',
 ]);

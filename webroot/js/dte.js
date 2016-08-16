@@ -162,6 +162,14 @@ DTE.round = function (valor) {
 }
 
 DTE.setTipo = function (tipo) {
+    // si es boleta indicador de servicios 3 por defecto
+    if (!document.getElementById('IndServicioField').value || document.getElementById('IndServicioField').value==3) {
+        if (tipo==39 || tipo==41) {
+            document.getElementById('IndServicioField').value = 3;
+        } else {
+            document.getElementById('IndServicioField').value = '';
+        }
+    }
     // habilitar u ocultar datos para guía de despacho
     if (tipo==52) {
         $('#datosTransporte').show();
@@ -177,13 +185,15 @@ DTE.setTipo = function (tipo) {
         $('#CmnaRecepField').attr('disabled', 'disabled');
         $('#TpoMonedaField').removeAttr('disabled');
         $('#NacionalidadField').removeAttr('disabled');
-        $('#IndServicioField').removeAttr('disabled');
         document.getElementById('RUTRecepField').value = '55.555.555-5';
         document.getElementById('RznSocRecepField').focus();
         document.getElementById('GiroRecepField').value = '';
         document.getElementById('CmnaRecepField').value = '';
         Form.addJS('referencias');
         $('#datosExportacion').show();
+        if (config_extra_indicador_servicio) {
+            document.getElementById('IndServicioField').value = config_extra_indicador_servicio;
+        }
     } else {
         $('#modalBuscar').show();
         $('#RUTRecepField').attr('onblur', 'Receptor.setDatos(\'emitir_dte\')');
@@ -192,8 +202,10 @@ DTE.setTipo = function (tipo) {
         $('#CmnaRecepField').removeAttr('disabled');
         $('#TpoMonedaField').attr('disabled', 'disabled');
         $('#NacionalidadField').attr('disabled', 'disabled');
-        $('#IndServicioField').attr('disabled', 'disabled');
         $('#datosExportacion').hide();
+        if (document.getElementById('IndServicioField').value==4 || document.getElementById('IndServicioField').value==5) {
+            document.getElementById('IndServicioField').value = '';
+        }
     }
     // agregar observación si existe
     document.getElementById("TermPagoGlosaField").value = (emision_observaciones !== null && emision_observaciones[tipo] !== undefined) ? emision_observaciones[tipo] : '';

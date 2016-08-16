@@ -27,7 +27,7 @@ namespace website\Dte;
 /**
  * Clase para todas las acciones asociadas a documentos (incluyendo API)
  * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
- * @version 2016-07-13
+ * @version 2016-08-16
  */
 class Controller_Documentos extends \Controller_App
 {
@@ -45,7 +45,11 @@ class Controller_Documentos extends \Controller_App
     ]; ///< tipos de traslado
 
     private $IndServicio = [
-        4=>'Servicios de hotelería'
+        1 => 'Factura o boleta de servicios períodicos domiciliarios', // boleta es periodico no domiciliario (se ajusta)
+        2 => 'Factura o boleta de otros servicios períodicos (no domiciliarios)',  // boleta es periodico domiciliario (se ajusta)
+        3 => 'Factura de servicios o boleta de ventas y servicios',
+        4 => 'Factura exportación de servicios de hotelería o boleta de espectáculos emitida por cuenta de terceros',
+        5 => 'Factura exportación de servicios de transporte internacional',
     ]; ///< Tipos de indicadores de servicios
 
     private $monedas = [
@@ -354,7 +358,7 @@ class Controller_Documentos extends \Controller_App
     /**
      * Acción para generar y mostrar previsualización de emisión de DTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-08-03
+     * @version 2016-08-16
      */
     public function previsualizacion()
     {
@@ -433,6 +437,8 @@ class Controller_Documentos extends \Controller_App
                     'FchEmis' => $_POST['FchEmis'],
                     'FmaPago' => !empty($_POST['FmaPago']) ? $_POST['FmaPago'] : false,
                     'FchCancel' => $_POST['FchVenc'] < $_POST['FchEmis'] ? $_POST['FchVenc'] : false,
+                    'PeriodoDesde' => !empty($_POST['PeriodoDesde']) ? $_POST['PeriodoDesde'] : false,
+                    'PeriodoHasta' => !empty($_POST['PeriodoHasta']) ? $_POST['PeriodoHasta'] : false,
                     'TermPagoGlosa' => !empty($_POST['TermPagoGlosa']) ? $_POST['TermPagoGlosa'] : false,
                     'FchVenc' => $_POST['FchVenc'] > $_POST['FchEmis'] ? $_POST['FchVenc'] : false,
                 ],
@@ -502,6 +508,12 @@ class Controller_Documentos extends \Controller_App
         }
         // si hay indicador de servicio se agrega
         if (!empty($_POST['IndServicio'])) {
+            if (in_array($dte['Encabezado']['IdDoc']['TipoDTE'], [39, 41])) {
+                if ($_POST['IndServicio']==1)
+                    $_POST['IndServicio'] = 2;
+                else if ($_POST['IndServicio']==2)
+                    $_POST['IndServicio'] = 1;
+            }
             $dte['Encabezado']['IdDoc']['IndServicio'] = $_POST['IndServicio'];
         }
         // agregar datos de exportación
