@@ -268,7 +268,7 @@ class Controller_DteIntercambios extends \Controller_App
     /**
      * Acción que procesa y responde al intercambio recibido
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-08-09
+     * @version 2016-08-17
      */
     public function responder($codigo)
     {
@@ -458,7 +458,10 @@ class Controller_DteIntercambios extends \Controller_App
                     $EmisorIntercambio->comuna = $comuna;
                 }
                 $EmisorIntercambio->modificado = date('Y-m-d H:i:s');
-                $EmisorIntercambio->save();
+                try {
+                    $EmisorIntercambio->save();
+                } catch (\sowerphp\core\Exception_Model_Datasource_Database $e) {
+                }
             }
             // guardar documentos que tienen acuse de recibo como dte recibidos
             $Documentos = $DteIntercambio->getDocumentos();
