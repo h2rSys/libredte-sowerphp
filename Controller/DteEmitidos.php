@@ -490,7 +490,7 @@ class Controller_DteEmitidos extends \Controller_App
     /**
      * Acción que permite actualizar el tipo de cambio de un documento de exportación
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-07-16
+     * @version 2016-08-18
      */
     public function avanzado_tipo_cambio($dte, $folio)
     {
@@ -511,7 +511,7 @@ class Controller_DteEmitidos extends \Controller_App
             $this->redirect(str_replace('avanzado_tipo_cambio', 'ver', $this->request->request).'#avanzado');
         }
         // sólo administrador puede cambiar el tipo de cambio
-        if ($DteEmitido->usuario != $this->Auth->User->id) {
+        if ($Emisor->usuario != $this->Auth->User->id) {
             \sowerphp\core\Model_Datasource_Session::message('Sólo el administrador de la empresa puede cambiar el tipo de cambio', 'error');
             $this->redirect(str_replace('avanzado_tipo_cambio', 'ver', $this->request->request).'#avanzado');
         }
