@@ -211,6 +211,13 @@ echo $f->end(false);
 
 <!-- INICIO AVANZADO -->
 <div role="tabpanel" class="tab-pane" id="avanzado">
+
+<?php
+if ($estado_enviodte==1) {
+    debug(implode("\n\n", \sasco\LibreDTE\Log::readAll()));
+    echo '<hr/>';
+}
+?>
 <a class="btn btn-danger btn-lg btn-block" href="<?=$_base?>/dte/dte_intercambios/eliminar/<?=$DteIntercambio->codigo?>" role="button" title="Eliminar intercambio" onclick="return Form.checkSend('¿Confirmar la eliminación del intercambio?')">
     Eliminar archivo EnvioDTE de intercambio
 </a>

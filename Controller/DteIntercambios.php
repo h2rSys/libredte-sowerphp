@@ -372,7 +372,7 @@ class Controller_DteIntercambios extends \Controller_App
                     'Recinto' => $_POST['Recinto'],
                     'RutFirma' => $Firma->getID(),
                 ]);
-                $EnvioRecibos_r[] = 'LibreDTE_T'.$_POST['TipoDTE'][$i].'F'.$_POST['Folio'][$i];
+                $EnvioRecibos_r[] = 'T'.$_POST['TipoDTE'][$i].'F'.$_POST['Folio'][$i];
             }
         }
         // generar y validar XML
@@ -466,7 +466,7 @@ class Controller_DteIntercambios extends \Controller_App
             // guardar documentos que tienen acuse de recibo como dte recibidos
             $Documentos = $DteIntercambio->getDocumentos();
             foreach ($Documentos as $Dte) {
-                if (in_array($Dte->getID(), $EnvioRecibos_r)) {
+                if (in_array($Dte->getID(true), $EnvioRecibos_r)) {
                     $resumen = $Dte->getResumen();
                     $DteRecibido = new Model_DteRecibido();
                     $DteRecibido->emisor = $DteIntercambio->getEmisor()->rut;
