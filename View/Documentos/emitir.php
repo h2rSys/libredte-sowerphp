@@ -132,6 +132,7 @@ if (isset($DteEmitido)) {
             'PrcItem' => isset($d['PrcItem']) ? $d['PrcItem'] : '',
             'ValorDR' => isset($d['DescuentoPct']) ? $d['DescuentoPct'] : (isset($d['DescuentoMonto']) ? $d['DescuentoMonto'] : 0),
             'TpoValor' => isset($d['DescuentoPct']) ? '%' : (isset($d['DescuentoMonto']) ? '$' : '%'),
+            'CodImpAdic' => isset($d['CodImpAdic']) ? $d['CodImpAdic'] : '',
         ];
     }
     $input_detalle['values'] = $detalle;
