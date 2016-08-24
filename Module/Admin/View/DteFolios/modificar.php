@@ -1,4 +1,4 @@
-<h1>Modificar mantenedor de folios</h1>
+<h1>Modificar mantenedor de folios DTE <?=$DteFolio->dte?></h1>
 <?php
 $f = new \sowerphp\general\View_Helper_Form();
 echo $f->begin(['onsubmit'=>'Form.check()']);
@@ -17,3 +17,7 @@ echo $f->input([
     'check' => 'notempty integer',
 ]);
 echo $f->end('Modificar mantenedor de folios');
+?>
+<div style="float:right;margin-bottom:1em;font-size:0.8em">
+    <a href="<?=$_base?>/dte/admin/dte_folios">Volver al mantenedor de folios</a>
+</div>

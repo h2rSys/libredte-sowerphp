@@ -198,4 +198,20 @@ class Model_DteFolio extends \Model_App
         return true;
     }
 
+    /**
+     * Método que entrega el listado de archivos CAF que existen cargados para
+     * el tipo de DTE
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-08-24
+     */
+    public function getCafs()
+    {
+        return $this->db->getTable('
+            SELECT desde, hasta
+            FROM dte_caf
+            WHERE emisor = :rut AND dte = :dte AND certificacion = :certificacion
+            ORDER BY desde
+        ', [':rut'=>$this->emisor, ':dte'=>$this->dte, ':certificacion'=>$this->certificacion]);
+    }
+
 }

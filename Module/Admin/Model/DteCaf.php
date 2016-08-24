@@ -126,4 +126,31 @@ class Model_DteCaf extends \Model_App
         'Model_DteFolio' => 'website\Dte\Admin'
     ); ///< Namespaces que utiliza esta clase
 
+    /**
+     * Método que entrega el objeto del CAF
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-08-24
+     */
+    public function getCAF()
+    {
+        if (!$this->xml)
+            return false;
+        $caf = \website\Dte\Utility_Data::decrypt($this->xml);
+        if (!$caf)
+            return false;
+        $Caf = new \sasco\LibreDTE\Sii\Folios($caf);
+        return $Caf->getTipo() ? $Caf : false;
+    }
+
+    /**
+     * Método que entrega el XML del archivo CAF desencriptado
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-08-24
+     */
+    public function getXML()
+    {
+        $Caf = $this->getCAF();
+        return $Caf ? $Caf->saveXML() : false;
+    }
+
 }

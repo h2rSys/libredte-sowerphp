@@ -18,3 +18,7 @@ echo $f->input([
     'check' => 'notempty integer',
 ]);
 echo $f->end('Crear mantenedor de folios e ir al paso siguiente');
+?>
+<div style="float:right;margin-bottom:1em;font-size:0.8em">
+    <a href="<?=$_base?>/dte/admin/dte_folios">Volver al mantenedor de folios</a>
+</div>

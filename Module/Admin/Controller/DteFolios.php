@@ -196,6 +196,27 @@ class Controller_DteFolios extends \Controller_App
     }
 
     /**
+     * Acción que permite ver el mantenedor de folios
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-08-24
+     */
+    public function ver($dte)
+    {
+        $Emisor = $this->getContribuyente();
+        $DteFolio = new Model_DteFolio($Emisor->rut, $dte, (int)$Emisor->config_ambiente_en_certificacion);
+        if (!$DteFolio->exists()) {
+            \sowerphp\core\Model_Datasource_Session::message(
+                'No existe el mantenedor de folios solicitado', 'error'
+            );
+            $this->redirect('/dte/admin/dte_folios');
+        }
+        $this->set([
+            'Emisor' => $Emisor,
+            'DteFolio' => $DteFolio,
+        ]);
+    }
+
+    /**
      * Acción que permite modificar un mantenedor de folios
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
      * @version 2015-09-29
@@ -244,6 +265,37 @@ class Controller_DteFolios extends \Controller_App
                 return;
             }
         }
+    }
+
+    /**
+     * Acción que permite descargar el XML del archivo CAF
+     * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
+     * @version 2016-08-24
+     */
+    public function xml($dte, $desde)
+    {
+        $Emisor = $this->getContribuyente();
+        if ($Emisor->usuario != $this->Auth->User->id) {
+            \sowerphp\core\Model_Datasource_Session::message(
+                'Sólo el administrador de la empresa puede descargar los archivos CAF', 'error'
+            );
+            $this->redirect('/dte/admin/dte_folios/ver/'.$dte);
+        }
+        $DteCaf = new Model_DteCaf($Emisor->rut, $dte, (int)$Emisor->config_ambiente_en_certificacion, $desde);
+        if (!$DteCaf->exists()) {
+            \sowerphp\core\Model_Datasource_Session::message(
+                'No existe el archivo CAF solicitado', 'error'
+            );
+            $this->redirect('/dte/admin/dte_folios');
+        }
+        // entregar XML
+        $file = 'caf_'.$Emisor->rut.'-'.$Emisor->dv.'_'.$dte.'_'.$desde.'.xml';
+        $xml = $DteCaf->getXML();
+        header('Content-Type: application/xml; charset=ISO-8859-1');
+        header('Content-Length: '.strlen($xml));
+        header('Content-Disposition: attachement; filename="'.$file.'"');
+        print $xml;
+        exit;
     }
 
     /**

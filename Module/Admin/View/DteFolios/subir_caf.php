@@ -12,3 +12,7 @@ echo $f->input([
     'attr' => 'accept="application/xml"',
 ]);
 echo $f->end('Subir archivo CAF');
+?>
+<div style="float:right;margin-bottom:1em;font-size:0.8em">
+    <a href="<?=$_base?>/dte/admin/dte_folios">Volver al mantenedor de folios</a>
+</div>

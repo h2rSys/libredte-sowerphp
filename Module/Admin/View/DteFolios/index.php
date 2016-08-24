@@ -2,7 +2,9 @@
 <p>Aquí podrá administrar los códigos de autorización de folios (CAF) disponibles para la empresa <?=$Emisor->razon_social?>.</p>
 <?php
 foreach ($folios as &$f) {
-    $f[] = '<a href="dte_folios/modificar/'.$f['dte'].'" title="Editar folios de tipo '.$f['dte'].'"><span class="fa fa-edit btn btn-default"></span></a>';
+    $acciones = '<a href="dte_folios/ver/'.$f['dte'].'" title="Ver mantenedor del folio tipo '.$f['dte'].'"><span class="fa fa-search btn btn-default"></span></a>';
+    $acciones .= ' <a href="dte_folios/modificar/'.$f['dte'].'" title="Editar folios de tipo '.$f['dte'].'"><span class="fa fa-edit btn btn-default"></span></a>';
+    $f[] = $acciones;
 }
 array_unshift($folios, ['Código', 'Documento', 'Siguiente folio', 'Total disponibles', 'Alertar', 'Acciones']);
 new \sowerphp\general\View_Helper_Table($folios);
