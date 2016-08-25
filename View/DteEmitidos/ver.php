@@ -105,6 +105,7 @@ $servidor = \sasco\LibreDTE\Sii::getServidor();
 <!-- INICIO PDF -->
 <div role="tabpanel" class="tab-pane" id="pdf">
 <?php
+$pdf_publico = $_url.'/dte/dte_emitidos/pdf/'.$DteEmitido->dte.'/'.$DteEmitido->folio.'/0/'.$Emisor->rut.'/'.$DteEmitido->fecha.'/'.$DteEmitido->total;
 $f = new \sowerphp\general\View_Helper_Form();
 echo $f->begin(['action'=>$_base.'/dte/dte_emitidos/pdf/'.$DteEmitido->dte.'/'.$DteEmitido->folio, 'id'=>'pdfForm', 'onsubmit'=>'Form.check(\'pdfForm\')']);
 echo $f->input([
@@ -119,6 +120,9 @@ echo $f->input(['name'=>'copias_tributarias', 'label'=>'Copias tributarias', 'va
 echo $f->input(['name'=>'copias_cedibles', 'label'=>'Copias cedibles', 'value'=>(int)$Emisor->config_pdf_copias_cedibles, 'check'=>'notempty integer']);
 echo $f->end('Descargar PDF');
 ?>
+    <a class="btn btn-primary btn-lg btn-block" href="<?=$pdf_publico?>" role="button">
+        Enlace público al PDF del DTE
+    </a>
 </div>
 <!-- FIN PDF -->
 
@@ -128,7 +132,7 @@ echo $f->end('Descargar PDF');
 if ($emails) {
     $asunto = 'EnvioDTE: '.num($Emisor->rut).'-'.$Emisor->dv.' - '.$DteEmitido->getTipo()->tipo.' N° '.$DteEmitido->folio;
     $mensaje = $Receptor->razon_social.','."\n\n";
-    $mensaje .= 'Se adjunta '.$DteEmitido->getTipo()->tipo.' N° '.$DteEmitido->folio.' del día '.\sowerphp\general\Utility_Date::format($DteEmitido->fecha).' por un monto total de $'.num($DteEmitido->total).'.-'."\n\n";
+    $mensaje .= 'Se adjunta '.$DteEmitido->getTipo()->tipo.' N° '.$DteEmitido->folio.' del día '.\sowerphp\general\Utility_Date::format($DteEmitido->fecha).' por un monto total de $'.num($DteEmitido->total).'.-'."\n\n".'Enlace directo: '.$pdf_publico."\n\n";
     $mensaje .= 'Saluda atentamente,'."\n\n";
     $mensaje .= '-- '."\n";
     if ($Emisor->config_extra_nombre_fantasia) {
