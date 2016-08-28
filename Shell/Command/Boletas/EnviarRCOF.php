@@ -27,26 +27,26 @@ namespace website\Dte;
  * Comando para enviar el reporte de consumo de folios de las boletas
  * electrónicas
  * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
- * @version 2016-07-01
+ * @version 2016-08-28
  */
 class Shell_Command_Boletas_EnviarRCOF extends \Shell_App
 {
 
     public function main($grupo = null, $certificacion = 0)
     {
-        define('_LibreDTE_CERTIFICACION_', (boolean)$certificacion);
+        \sasco\LibreDTE\Sii::setAmbiente((int)$certificacion);
         $from_unix_time = mktime(0, 0, 0, date('m'), date('d'), date('Y'));
         $day_before = strtotime('yesterday', $from_unix_time);
         $dia = date('Y-m-d', $day_before);
         $contribuyentes = $this->getContribuyentes($grupo);
         foreach ($contribuyentes as $rut) {
-            $this->enviar($rut, $dia);
+            $this->enviar($rut, $dia, $certificacion);
         }
         $this->showStats();
         return 0;
     }
 
-    private function enviar($rut, $dia, $retry = 10)
+    private function enviar($rut, $dia, $certificacion, $retry = 10)
     {
         $Contribuyente = new Model_Contribuyente($rut);
         if (!$Contribuyente->exists()) {
@@ -55,7 +55,7 @@ class Shell_Command_Boletas_EnviarRCOF extends \Shell_App
         if ($this->verbose) {
             $this->out('Enviando RCOF del contribuyente '.$Contribuyente->razon_social);
         }
-        if ($Contribuyente->config_ambiente_en_certificacion != _LibreDTE_CERTIFICACION_) {
+        if ($Contribuyente->config_ambiente_en_certificacion != $certificacion) {
             if ($this->verbose) {
                 $this->out('  Contribuyente no está en el ambiente del envío');
             }

@@ -1078,7 +1078,7 @@ class Controller_Documentos extends \Controller_App
     /**
      * Recurso de la API que permite validar el TED (timbre electrónico)
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
-     * @version 2016-06-22
+     * @version 2016-08-28
      */
     public function _api_verificar_ted_POST()
     {
@@ -1149,7 +1149,7 @@ class Controller_Documentos extends \Controller_App
             return ['GLOSA_ERR'=>'Documento es boleta, no se envía al SII'];
         }
         // definir si se consultará en certificación o producción
-        define('_LibreDTE_CERTIFICACION_', $datos['TED']['DD']['CAF']['DA']['IDK']==100);
+        \sasco\LibreDTE\Sii::setAmbiente($datos['TED']['DD']['CAF']['DA']['IDK']==100);
         // crear objeto firma
         $Firma = new \sasco\LibreDTE\FirmaElectronica();
         // obtener token
