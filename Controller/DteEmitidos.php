@@ -1,5 +1,4 @@
 <?php
-
 /**
  * LibreDTE
  * Copyright (C) SASCO SpA (https://sasco.cl)
@@ -20,10 +19,8 @@
  * junto a este programa.
  * En caso contrario, consulte <http://www.gnu.org/licenses/agpl.html>.
  */
-
 // namespace del controlador
 namespace website\Dte;
-
 /**
  * Controlador de dte emitidos
  * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -31,7 +28,6 @@ namespace website\Dte;
  */
 class Controller_DteEmitidos extends \Controller_App
 {
-
     /**
      * Método para permitir acciones sin estar autenticado
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -42,7 +38,6 @@ class Controller_DteEmitidos extends \Controller_App
         $this->Auth->allow('pdf', 'xml');
         parent::beforeFilter();
     }
-
     /**
      * Acción que permite mostrar los documentos emitidos por el contribuyente
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -94,7 +89,6 @@ class Controller_DteEmitidos extends \Controller_App
             'searchUrl' => $searchUrl,
         ]);
     }
-
     /**
      * Acción que permite eliminar un DTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -117,7 +111,6 @@ class Controller_DteEmitidos extends \Controller_App
         }
         $this->redirect('/dte/dte_emitidos/listar');
     }
-
     /**
      * Acción que muestra la página de un DTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -145,7 +138,6 @@ class Controller_DteEmitidos extends \Controller_App
             'enviar_sii' => !(in_array($DteEmitido->dte, [39, 41]) or $DteEmitido->track_id == -1),
         ]);
     }
-
     /**
      * Acción que envía el DTE al SII si este no ha sido envíado (no tiene
      * track_id) o bien si se solicita reenviar (tiene track id) y está
@@ -173,7 +165,6 @@ class Controller_DteEmitidos extends \Controller_App
         }
         $this->redirect(str_replace('enviar_sii', 'ver', $this->request->request));
     }
-
     /**
      * Acción que solicita se envíe una nueva revisión del DTE al email
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -212,7 +203,6 @@ class Controller_DteEmitidos extends \Controller_App
         // redireccionar
         $this->redirect(str_replace('solicitar_revision', 'ver', $this->request->request));
     }
-
     /**
      * Acción que actualiza el estado del envío del DTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -237,7 +227,6 @@ class Controller_DteEmitidos extends \Controller_App
         }
         $this->redirect(str_replace('actualizar_estado', 'ver', $this->request->request));
     }
-
     /**
      * Acción que descarga el PDF del documento emitido
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -307,7 +296,6 @@ class Controller_DteEmitidos extends \Controller_App
         echo $response['body'];
         exit;
     }
-
     /**
      * Acción que descarga el XML del documento emitido
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -355,7 +343,6 @@ class Controller_DteEmitidos extends \Controller_App
         print $xml;
         exit;
     }
-
     /**
      * Acción que descarga el JSON del documento emitido
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -383,7 +370,6 @@ class Controller_DteEmitidos extends \Controller_App
         echo $json;
         exit;
     }
-
     /**
      * Acción que envía por email el PDF y el XML del DTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -456,7 +442,6 @@ class Controller_DteEmitidos extends \Controller_App
             $this->redirect(str_replace('enviar_email', 'ver', $this->request->request).'#email');
         }
     }
-
     /**
      * Acción que permite actualizar el track_id del DteEmitido
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -486,7 +471,6 @@ class Controller_DteEmitidos extends \Controller_App
         \sowerphp\core\Model_Datasource_Session::message('Track ID actualizado', 'ok');
         $this->redirect(str_replace('avanzado_track_id', 'ver', $this->request->request).'#avanzado');
     }
-
     /**
      * Acción que permite actualizar el tipo de cambio de un documento de exportación
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -521,7 +505,6 @@ class Controller_DteEmitidos extends \Controller_App
         \sowerphp\core\Model_Datasource_Session::message('Monto en pesos (CLP) del DTE actualizado', 'ok');
         $this->redirect(str_replace('avanzado_tipo_cambio', 'ver', $this->request->request));
     }
-
     /**
      * Acción que permite cargar un archivo XML como DTE emitido
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -548,7 +531,6 @@ class Controller_DteEmitidos extends \Controller_App
             }
         }
     }
-
     /**
      * Acción que permite realizar una búsqueda avanzada dentro de los DTE
      * emitidos
@@ -596,7 +578,6 @@ class Controller_DteEmitidos extends \Controller_App
             }
         }
     }
-
     /**
      * Acción de la API que permite obtener la información de un DTE emitido
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -626,7 +607,6 @@ class Controller_DteEmitidos extends \Controller_App
         $DteEmitido->xml = false;
         $this->Api->send($DteEmitido, 200, JSON_PRETTY_PRINT);
     }
-
     /**
      * Acción de la API que permite obtener el PDF de un DTE emitido
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -690,7 +670,6 @@ class Controller_DteEmitidos extends \Controller_App
         echo $response['body'];
         exit;
     }
-
     /**
      * Acción de la API que permite obtener el XML de un DTE emitido
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -719,7 +698,6 @@ class Controller_DteEmitidos extends \Controller_App
         }
         return $DteEmitido->xml;
     }
-
     /**
      * Acción de la API que permite obtener el timbre de un DTE emitido
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -757,7 +735,6 @@ class Controller_DteEmitidos extends \Controller_App
             $pdf417->getBarcodePNG(4, 4, [0,0,0]);
         }
     }
-
     /**
      * Acción de la API que permite consultar el estado del envío del DTE al SII
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -792,7 +769,6 @@ class Controller_DteEmitidos extends \Controller_App
         \sasco\LibreDTE\Sii::setAmbiente($Emisor->config_ambiente_en_certificacion);
         return $avanzado ? $DteEmitido->getDte()->getEstadoAvanzado($Firma) : $DteEmitido->getDte()->getEstado($Firma);
     }
-
     /**
      * Acción de la API que permite actualizar el estado de envio del DTE
      * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -827,7 +803,6 @@ class Controller_DteEmitidos extends \Controller_App
             $this->Api->send($e->getMessage(), 500);
         }
     }
-
     /**
      * Recurso de la API que envía el DTE al SII si este no ha sido envíado (no
      * tiene track_id) o bien si se solicita reenviar (tiene track id) y está
@@ -872,7 +847,6 @@ class Controller_DteEmitidos extends \Controller_App
             $this->Api->send($e->getMessage(), 502);
         }
     }
-
     /**
      * Recurso de la API que permite eliminar un DTE rechazado o no enviado al
      * SII
@@ -911,7 +885,6 @@ class Controller_DteEmitidos extends \Controller_App
         }
         return true;
     }
-
     /**
      * Acción de la API que permite cargar el XML de un DTE como documento
      * emitido
@@ -978,7 +951,6 @@ class Controller_DteEmitidos extends \Controller_App
         $DteEmitido->xml = null;
         $this->Api->send($DteEmitido, 200, JSON_PRETTY_PRINT);
     }
-
     /**
      * Acción de la API que permite realizar una búsqueda avanzada dentro de los
      * DTEs emitidos
@@ -1006,5 +978,101 @@ class Controller_DteEmitidos extends \Controller_App
         // buscar documentos
         $this->Api->send($Emisor->getDocumentosEmitidos(json_decode($this->Api->data, true)), 200, JSON_PRETTY_PRINT);
     }
-
+/**
+     * Acción de la API  que envía por email el PDF y el XML del DTE
+     * @author H2R
+     * @version 2016-08-23
+     */
+    public function _api_enviar_email_POST($dte, $folio, $emisor=0 ,$usarWebservice = true) 
+    {
+        // verificar usuario autenticado
+        if ($this->Auth->User) {
+            $User = $this->Auth->User;
+        } else {
+            $User = $this->Api->getAuthUser();
+            if (is_string($User)) {
+                $this->Api->send($User, 401);
+            }
+        }
+        if(!$emisor){
+            $emisor=(int)$_GET['emisor'];
+        }
+        
+        $Emisor = new Model_Contribuyente($emisor);
+        if (!$Emisor->exists()) {
+                $this->Api->send('Emisor no existe', 404);
+        }
+        if (!$Emisor->usuarioAutorizado($User, '/dte/dte_emitidos/enviar_email')) {
+            $this->Api->send('No está autorizado a operar con la empresa solicitada', 403);
+        }
+        //$Emisor = $this->getContribuyente();
+        // obtener DTE emitido
+        $DteEmitido = new Model_DteEmitido($Emisor->rut, $dte, $folio, (int)$Emisor->config_ambiente_en_certificacion);
+        if (!$DteEmitido->exists()) {
+            $this->Api->send('No existe el DTE', 404);
+        }
+        
+        // verificar que receptor exista
+        $Receptor = new Model_Contribuyente($DteEmitido->getReceptor()->rut);
+        if (!$Receptor->exists()) {
+            $this->Api->send('Receptor no existe', 404);
+        }
+        $asunto = 'EnvioDTE: '.num($Emisor->rut).'-'.$Emisor->dv.' - '.$DteEmitido->getTipo()->tipo.' N° '.$DteEmitido->folio;
+        $mensaje = $Receptor->razon_social.','."\n\n";
+        $mensaje .= 'Se adjunta '.$DteEmitido->getTipo()->tipo.' N° '.$DteEmitido->folio.' del día '.\sowerphp\general\Utility_Date::format($DteEmitido->fecha).' por un monto total de $'.num($DteEmitido->total).'.-'."\n\n";
+        $mensaje .= 'Saluda atentamente,'."\n\n";
+        $mensaje .= '-- '."\n".$Emisor->razon_social."\n";
+        $mensaje .= $Emisor->giro."\n";
+        $contacto = [];
+        if (!empty($Emisor->telefono))
+            $contacto[] = $Emisor->telefono;
+        if (!empty($Emisor->email))
+            $contacto[] = $Emisor->email;
+        if ($Emisor->config_extra_web)
+            $contacto[] = $Emisor->config_extra_web;
+        if ($contacto)
+            $mensaje .= implode(' - ', $contacto)."\n";
+        $mensaje .= $Emisor->direccion.', '.$Emisor->getComuna()->comuna."\n";
+        $emails=$DteEmitido->getEmails();
+        // crear email
+        $email = $Emisor->getEmailSmtp();
+        $email->to(array_values($emails));
+        $email->subject($asunto);
+        // adjuntar PDF
+        $data = [
+            'xml' => $DteEmitido->xml,
+            'cedible' => isset($_POST['cedible']),
+            'papelContinuo' => $Emisor->config_pdf_dte_papel,
+            'compress' => false,
+        ];
+        $logo = \sowerphp\core\Configure::read('dte.logos.dir').'/'.$Emisor->rut.'.png';
+        if (is_readable($logo)) {
+            $data['logo'] = base64_encode(file_get_contents($logo));
+        }
+        $rest = new \sowerphp\core\Network_Http_Rest();
+        
+        $rest->setAuth($User->hash);
+        $response = $rest->post($this->request->url.'/api/dte/documentos/generar_pdf', $data);
+        if ($response['status']['code']!=200) {
+            $this->Api->send('Error respuesta distinta de 200', 200);
+        }
+        $email->attach([
+            'data' => $response['body'],
+            'name' => 'dte_'.$Emisor->rut.'-'.$Emisor->dv.'_T'.$DteEmitido->dte.'F'.$DteEmitido->folio.'.pdf',
+            'type' => 'application/pdf',
+        ]);
+        // adjuntar XML
+        $email->attach([
+            'data' => base64_decode($DteEmitido->xml),
+            'name' => 'dte_'.$Emisor->rut.'-'.$Emisor->dv.'_T'.$DteEmitido->dte.'F'.$DteEmitido->folio.'.xml',
+            'type' => 'application/xml',
+        ]);
+        // enviar email
+        $status = $email->send($mensaje);
+        if ($status===true) {
+            $this->Api->send('Correo enviado', 200);
+        } else {
+            $this->Api->send('No se pudo enviar', 200);
+        }
+    }
 }
