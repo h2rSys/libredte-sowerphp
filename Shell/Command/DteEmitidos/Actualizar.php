@@ -1,5 +1,4 @@
 <?php
-
 /**
  * LibreDTE
  * Copyright (C) SASCO SpA (https://sasco.cl)
@@ -20,9 +19,7 @@
  * junto a este programa.
  * En caso contrario, consulte <http://www.gnu.org/licenses/agpl.html>.
  */
-
 namespace website\Dte;
-
 /**
  * Comando para actualizar la bandeja de intercambio de los contribuyentes
  * @author Esteban De La Fuente Rubio, DeLaF (esteban[at]sasco.cl)
@@ -30,7 +27,6 @@ namespace website\Dte;
  */
 class Shell_Command_DteEmitidos_Actualizar extends \Shell_App
 {
-
     public function main($grupo = null, $certificacion = 0)
     {
         $this->db = \sowerphp\core\Model_Datasource_Database::get();
@@ -41,9 +37,11 @@ class Shell_Command_DteEmitidos_Actualizar extends \Shell_App
         $this->showStats();
         return 0;
     }
-
     private function actualizarDocumentosEmitidos($rut)
     {
+        //definir url y hash usuario autorizado empresas
+        $url = 'https://servidorlibredte.dominio.cl'; // Define url servidor
+        $hash = 'VIxxxxfvB8hy4er56jhxuHaBU2hvarZU'; // Define hash de usuario con permisos para empresa
         $Contribuyente = new Model_Contribuyente($rut);
         if ($this->verbose) {
             $this->out('Buscando documentos del contribuyente '.$Contribuyente->razon_social);
@@ -62,6 +60,13 @@ class Shell_Command_DteEmitidos_Actualizar extends \Shell_App
                     $msg = $DteEmitido->revision_estado."\n\n".$DteEmitido->revision_detalle;
                     $Contribuyente->notificar('T'.$DteEmitido->dte.'F'.$DteEmitido->folio.' RECHAZADO!', $msg);
                 }
+                else{
+                    $rest = new \sowerphp\core\Network_Http_Rest();
+                    $rest->setAuth($hash);
+                // Enviar email
+                    $response = $rest->post($url.'/api/dte/dte_emitidos/enviar_email/'.$d['dte'].'/'.$d['folio'].'?usarWebservice=true&emisor='.$rut, "emisor=".$rut);
+                }
+                
                 if ($estado_original=='-11' and $DteEmitido->revision_estado!=$estado_original) {
                     $msg = $DteEmitido->revision_estado."\n\n".$DteEmitido->revision_detalle;
                     $Contribuyente->notificar('T'.$DteEmitido->dte.'F'.$DteEmitido->folio.' ESTADO -11 ACTUALIZADO!', $msg);
@@ -94,7 +99,6 @@ class Shell_Command_DteEmitidos_Actualizar extends \Shell_App
             }
         }
     }
-
     private function getContribuyentes($grupo = null, $certificacion = 0)
     {
         if (is_numeric($grupo))
@@ -128,5 +132,4 @@ class Shell_Command_DteEmitidos_Actualizar extends \Shell_App
             ', [':certificacion'=>(int)$certificacion]);
         }
     }
-
 }
